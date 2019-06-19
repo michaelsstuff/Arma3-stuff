@@ -1,0 +1,10 @@
+language: shell
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: test
+      script:
+        - bash -c 'shopt -s globstar; shellcheck -x *.sh'
