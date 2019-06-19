@@ -9,7 +9,7 @@ else
 fi
 
 home="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-moddir="${home}/arma3server/mods"
+moddir="${home}/arma3server/mods/"
 update_list="${home}/arma3server/modupdate.latest" 
 
 if [ -f "$home/config.cfg" ]; then
@@ -24,10 +24,6 @@ if [ -f "$update_list" ]; then
     source "$update_list"
 fi
 
-# installing required tools
-yum install epel-release -y
-yum install jq unzip -y
-
 # compare versions
 function version_lt() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; }
 
@@ -40,7 +36,7 @@ if [ -n "$cba3_version" ]; then
     curl -L -s "$cba3_url" -o cba3.zip
     modname_dir="$(unzip -Ll cba3.zip  | awk 'NR==4{print $4;}' | tr -d ^)"
     rm -fr "$moddir""$modname_dir"
-    unzip -qaaCL cba3.zip -d "$moddir"
+    unzip -qCL cba3.zip -d "$moddir"
     rm -f cba3.zip
     versions[cba]="$cba3_version"
   else
@@ -57,7 +53,7 @@ if [ -n "$ace3_version" ]; then
     curl -L -s "$ace3_url" -o ace3.zip
     modname_dir="$(unzip -Ll ace3.zip  | awk 'NR==4{print $4;}' | tr -d ^)"
     rm -fr "$moddir""$modname_dir"
-    unzip -qaaCL ace3.zip -d "$moddir"
+    unzip -qCL ace3.zip -d "$moddir"
     rm -f ace3.zip
     versions[ace3]="$ace3_version"
   else
@@ -74,7 +70,7 @@ if [ -n "$acex_version" ]; then
     curl -L -s "$acex_url" -o acex.zip
     modname_dir="$(unzip -Ll acex.zip  | awk 'NR==4{print $4;}' | tr -d ^)"
     rm -fr "$moddir""$modname_dir"
-    unzip -qaaCL acex.zip -d "$moddir"
+    unzip -qCL acex.zip -d "$moddir"
     rm -f acex.zip
     versions[acex]="$acex_version"
   else
@@ -91,7 +87,7 @@ if [ -n "$acre2_version" ]; then
     curl -L -s "$acre2_url" -o acre2.zip
     modname_dir="$(unzip -Ll acre2.zip  | awk 'NR==4{print $4;}' | tr -d ^)"
     rm -fr "$moddir""$modname_dir"
-    unzip -qaaCL acre2.zip -d "$moddir"
+    unzip -qCL acre2.zip -d "$moddir"
     rm -f acre2.zip
     versions[acre2]="$acre2_version"
   else

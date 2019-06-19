@@ -1,7 +1,8 @@
 #!/bin/bash
 steam_home="/home/steam/"
 a3_dir="$steam_home"arma3server
-yum install -y glibc libstdc++ glibc.i686 libstdc++.i686  
+yum install epel-release -y
+yum install -y glibc libstdc++ glibc.i686 libstdc++.i686 jq unzip
 useradd -m steam
 cp server.sh hc.sh update-mods.sh "$steam_home"
 if [ ! -f "$steam_home"config.cfg ]; then
