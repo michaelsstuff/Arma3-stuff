@@ -8,9 +8,9 @@ else
   exit 1
 fi
 
-home="/home/steam"                                  # this could be overwritten by the config.cfg
-moddir="/home/steam/arma3server/mods/"              # this could be overwritten by the config.cfg
-update_list="/home/steam/arma3server/update.latest" # this could be overwritten by the config.cfg
+home="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+moddir="${home}/arma3server/mods"
+update_list="${home}/arma3server/modupdate.latest" 
 
 if [ -f "$home/config.cfg" ]; then
 # shellcheck source=config.cfg
@@ -30,7 +30,6 @@ yum install jq unzip -y
 
 # compare versions
 function version_lt() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; }
-
 
 # CBA3
 cba3_version="$(curl -u "$githubuser":"$githubtoken" -s https://api.github.com/repos/CBATeam/CBA_A3/releases/latest | jq -r .tag_name)"
@@ -100,4 +99,4 @@ if [ -n "$acre2_version" ]; then
   fi
 fi
 
-declare -p  versions > $update_list
+declare -p  versions > "$update_list"

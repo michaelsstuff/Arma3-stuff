@@ -1,9 +1,13 @@
 #!/bin/bash
-a3_dir="/home/steam/arma3server"
-yum install -y glibc libstdc++ glibc.i686 libstdc++.i686
+steam_home="/home/steam/"
+a3_dir="$steam_home"arma3server
+yum install -y glibc libstdc++ glibc.i686 libstdc++.i686  
 useradd -m steam
-cp server.sh hc.sh config.cfg /home/steam/
-cd /home/steam/ || exit
+cp server.sh hc.sh update-mods.sh "$steam_home"
+if [ ! -f "$steam_home"config.cfg ]; then
+ cp config.cfg "$steam_home"config.cfg
+fi
+cd "$steam_home" || exit
 curl -sL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf -
 ./steamcmd.sh +login anonymous +quit
 if [ ! -d  $a3_dir ]; then
@@ -12,7 +16,7 @@ if [ ! -d  $a3_dir ]; then
     exit 1
   fi
 fi
-chown -R steam:steam /home/steam/
+chown -R steam:steam "$steam_home"
 cat <<EOF > /etc/systemd/system/arma3-server.service
 [Unit]
 Description=Arma 3 Server
@@ -20,7 +24,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-ExecStart=/home/steam/server.sh
+ExecStart=${steam_home}server.sh
 User=steam
 
 [Install]
@@ -35,7 +39,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-ExecStart=/home/steam/hc.sh
+ExecStart=${steam_home}hc.sh
 User=steam
 
 [Install]
@@ -50,5 +54,5 @@ printf "Or you can start the headless client with \'systemctl start arma3-hc.ser
 printf "\n"
 printf "The initial start will take some time, as we have to download arma3 server\n"
 printf "\n"
-printf "Make sure to edit the /home/steam/config.cfg to match your requirements! \n"
+printf "Make sure to edit the %sconfig.cfg to match your requirements! \n" "$steam_home"
 printf "\n"

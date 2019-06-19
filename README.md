@@ -11,5 +11,6 @@ This is for a centOS 7 Host. If the host is freshly deployed, run the install.sh
 ```
 yum install git -y
 git clone https://github.com/michaelsstuff/Arma3-stuff.git
-bash Arma3-stuff/a3-server/install.sh
+cd Arma3-stuff/a3-server/
+bash install.sh
 ```
