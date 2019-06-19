@@ -1,7 +1,9 @@
 #!/bin/bash
-# shellcheck disable=SC2087
+# shellcheck disable=SC2140
 # shellcheck source=config.cfg
-hcloud="docker run -it --env-file .env 6dcaf70ee248"
+# shellcheck disable=SC1091
+docker build -t arma3-hetzner/deploy .
+hcloud="docker run -it --env-file .env arma3-hetzner/deploy:latest"
 source "config.cfg"
 
 if [ ! -f ssh.key ]; then
@@ -29,9 +31,9 @@ create_hc() {
             test_ssh "$ip" && break
             n=$((n+1))
         done
-        declare steamu # this is for shellcheck
+        declare steamu
         eval steamu="$"STEAMUSER"$i"
-        declare steamp # this is for shellcheck
+        declare steamp
         eval steamp="$"STEAMPASS"$i"
         ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -i ssh.key root@"$ip" << EOC
 curl https://raw.githubusercontent.com/michaelsstuff/arma3-server-scripts/master/install.sh | bash
@@ -62,14 +64,17 @@ create_server() {
         test_ssh "$ip" && break
         n=$((n+1))
     done
-    declare steamu # this is for shellcheck
+    declare steamu
     eval steamu="$"STEAMUSER"server"
-    declare steamp # this is for shellcheck
+    declare steamp
     eval steamp="$"STEAMPASS"server"
     list1=$( IFS=$', '; echo "${hclients[*]}" )
     headlessClients=$(echo "$list1" | sed 's/,/","/g' | awk '{print "\""$0}' | awk '{print $0"\""}')
     ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -i ssh.key root@"$ip" << EOC
-curl https://raw.githubusercontent.com/michaelsstuff/arma3-server-scripts/master/install.sh | bash
+yum install git -y
+git clone https://github.com/michaelsstuff/Arma3-stuff.git
+cd Arma3-stuff/a3-server/
+bash install.sh
 cat <<EOF >  /home/steam/config.cfg
 MODURL="ftp://158.69.123.76/"
 STEAMUSER="$steamu"
@@ -80,7 +85,7 @@ a3_dir="/home/steam/arma3server"
 MODUPDATE=true
 
 EOF
-
+s
 cat <<EOF >  /home/steam/arma3server/server.cfg
 hostname       = "My Arma 3 Server";
 password     = "$SERVERPASS";
