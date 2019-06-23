@@ -69,13 +69,36 @@ if [[ $MODUPDATE = "ftp" ]]; then
   wget -m -c --restrict-file-names=lowercase -P "$a3_dir"/mods/ -nH "${MODURL}"
 elif [[ $MODUPDATE = "direct" ]]; then
   /bin/bash "${home}"/update-mods.sh
+elif [[ $MODUPDATE = "workshop" ]]; then
+  if [[ -z $WS_IDS ]]; then 
+    printf "Workshop mod IDs not configured, please set WS_IDS in the config.cfg\n"
+    exit 1
+  elif [ -z "${STEAMWSUSER}" ]; then 
+    printf "STEAMWSUSER is not set, please configure in config.cfg"
+    exit 1
+  elif [ -z "${STEAMWSPASS}" ]; then 
+    printf "STEAMWSPASS is not set, please configure in config.cfg"
+    exit 1
+  else
+    a3_id=107410    
+    for i in ${WS_IDS[*]}; do
+      ./steamcmd.sh +login "${STEAMWSUSER}" "${STEAMWSPASS}" +workshop_download_item "${a3_id}" "$i"  +quit
+    done
+  fi
 fi
 
 # create modlist
 cd "$a3_dir" || exit
-for d in mods/@*/ ; do
-  mods_array+=("$d")
-done
+if [[ $MODUPDATE = "workshop" ]]; then
+  wsmodsdir="${home}/Steam/steamapps/workshop/content/${a3_id}"  
+  for d in "${wsmodsdir}"/* ; do
+    mods_array+=("$d")
+  done
+else
+  for d in mods/@*/ ; do
+    mods_array+=("$d")
+  done
+fi
 mods=$( IFS=$';'; echo "${mods_array[*]}" )
 
 # getting tuned basic config, tuned for about 100 Mbit/s synchronous
