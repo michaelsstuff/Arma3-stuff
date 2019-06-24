@@ -7,4 +7,4 @@ jobs:
   include:
     - stage: test
       script:
-        - find . -name "*.sh" -type f -exec bash -c 'shopt -s globstar; shellcheck -x ' {} \;
+        - find . -name "*.sh" -type f -exec bash -c 'shopt -s globstar; shellcheck -x {}' \;
