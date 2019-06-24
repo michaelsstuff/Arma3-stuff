@@ -2,15 +2,15 @@
 steam_home="/home/steam/"
 a3_dir="$steam_home"arma3server
 yum install epel-release -y
-yum install -y glibc libstdc++ glibc.i686 libstdc++.i686 jq unzip
+yum install -y glibc libstdc++ glibc.i686 libstdc++.i686 jq unzip dos2unix
 useradd -m steam
 cp server.sh hc.sh update-mods.sh "$steam_home"
 if [ ! -f "$steam_home"config.cfg ]; then
  cp config.cfg "$steam_home"config.cfg
 fi
 cd "$steam_home" || exit
-curl -sL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf -
-./steamcmd.sh +login anonymous +quit
+sudo -u steam bash -c 'curl -sL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf -'
+sudo -u steam bash -c './steamcmd.sh +login anonymous +quit'
 if [ ! -d  $a3_dir ]; then
   if ! mkdir -p $a3_dir; then
     printf "Could not create %s \n" $a3_dir

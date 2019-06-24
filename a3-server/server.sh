@@ -70,46 +70,42 @@ if [[ $MODUPDATE = "ftp" ]]; then
 elif [[ $MODUPDATE = "direct" ]]; then
   /bin/bash "${home}"/update-mods.sh
 elif [[ $MODUPDATE = "workshop" ]]; then
-  if [[ -z $WS_IDS ]]; then 
+  if [[ -z $WS_IDS ]]; then
     printf "Workshop mod IDs not configured, please set WS_IDS in the config.cfg\n"
     exit 1
-  elif [ -z "${STEAMWSUSER}" ]; then 
+  elif [ -z "${STEAMWSUSER}" ]; then
     printf "STEAMWSUSER is not set, please configure in config.cfg"
     exit 1
-  elif [ -z "${STEAMWSPASS}" ]; then 
+  elif [ -z "${STEAMWSPASS}" ]; then
     printf "STEAMWSPASS is not set, please configure in config.cfg"
     exit 1
   else
-    a3_id=107410    
+    a3_id=107410
     for i in ${WS_IDS[*]}; do
       ./steamcmd.sh +login "${STEAMWSUSER}" "${STEAMWSPASS}" +workshop_download_item "${a3_id}" "$i"  +quit
+      modname="$(curl -s https://steamcommunity.com/sharedfiles/filedetails/?id="${i}" | grep "<title>" | sed -e 's/<[^>]*>//g' |awk '{print $4}')"
+      modname_clean=$(echo "$modname"|dos2unix)
+      ln -s "${home}/Steam/steamapps/workshop/content/${a3_id}/${i}" "${a3_dir}/mods/@${modname_clean}"
     done
   fi
 fi
 
 # create modlist
 cd "$a3_dir" || exit
-if [[ $MODUPDATE = "workshop" ]]; then
-  wsmodsdir="${home}/Steam/steamapps/workshop/content/${a3_id}"  
-  for d in "${wsmodsdir}"/* ; do
-    mods_array+=("$d")
-  done
-else
-  for d in mods/@*/ ; do
-    mods_array+=("$d")
-  done
-fi
+for d in mods/@*/ ; do
+  mods_array+=("$d")
+done
 mods=$( IFS=$';'; echo "${mods_array[*]}" )
 
 # getting tuned basic config, tuned for about 100 Mbit/s synchronous
 if [[ $NOBASIC != "true" ]]; then
-  if [[ ! -f "${home}"/config.md5 ]]; then 
+  if [[ ! -f "${home}"/config.md5 ]]; then
     curl -sL https://raw.githubusercontent.com/michaelsstuff/Arma3-stuff/master/a3-server/basic.cfg -o "$a3_dir"/basic.cfg
     md5sum "${home}"/config.cfg > "${home}"/config.md5
   else
-    if ! md5sum -c "${home}"/config.md5 --status; then 
+    if ! md5sum -c "${home}"/config.md5 --status; then
       curl -sL https://raw.githubusercontent.com/michaelsstuff/Arma3-stuff/master/a3-server/basic.cfg -o "$a3_dir"/basic.cfg
-    fi    
+    fi
   fi
 fi
 
