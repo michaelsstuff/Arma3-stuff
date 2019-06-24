@@ -1,5 +1,7 @@
 # arma3-stuff
 
+[![Build Status](https://travis-ci.org/michaelsstuff/Arma3-stuff.svg?branch=master)](https://travis-ci.org/michaelsstuff/Arma3-stuff)
+
 <a href="url"><img src="https://community.bistudio.com/wikidata/images/8/80/Arma_3_logo_black.png" align="left" height="80" ></a>
 <br />  
 <br />  

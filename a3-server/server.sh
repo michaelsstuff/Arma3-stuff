@@ -65,6 +65,13 @@ if [ ! -d  "${home}/.local/share/Arma 3 - Other Profiles" ]; then
 fi
 
 # download mods if parameter is set
+if [ ! -d  "$a3_dir"/mods ]; then
+  if ! mkdir -p "$a3_dir"/mods; then
+    printf "Could not create %s/mods \n" "$a3_dir"
+    exit 1
+  fi
+fi
+
 if [[ $MODUPDATE = "ftp" ]]; then
   wget -m -c --restrict-file-names=lowercase -P "$a3_dir"/mods/ -nH "${MODURL}"
 elif [[ $MODUPDATE = "direct" ]]; then
@@ -82,10 +89,15 @@ elif [[ $MODUPDATE = "workshop" ]]; then
   else
     a3_id=107410
     for i in ${WS_IDS[*]}; do
-      ./steamcmd.sh +login "${STEAMWSUSER}" "${STEAMWSPASS}" +workshop_download_item "${a3_id}" "$i"  +quit
-      modname="$(curl -s https://steamcommunity.com/sharedfiles/filedetails/?id="${i}" | grep "<title>" | sed -e 's/<[^>]*>//g' |awk '{print $4}')"
+      ./steamcmd.sh +login "${STEAMWSUSER}" "${STEAMWSPASS}" +workshop_download_item "${a3_id}" "$i" +quit
+      modname="$(curl -s https://steamcommunity.com/sharedfiles/filedetails/?id="${i}" | grep "<title>" | sed -e 's/<[^>]*>//g' |awk '{print $4}')" # still need to rework, so it grabs the full name!
       modname_clean=$(echo "$modname"|dos2unix)
       ln -s "${home}/Steam/steamapps/workshop/content/${a3_id}/${i}" "${a3_dir}/mods/@${modname_clean}"
+      cd "${a3_dir}/mods/@${modname_clean}" || exit
+      for f in $( find ./ -type f | grep "[A-Z]" ); do
+        mv -i "$f" "$(echo "$f" | tr "[:upper:]" "[:lower:]")";
+      done
+      cd "$home" || exit
     done
   fi
 fi
