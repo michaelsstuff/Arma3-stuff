@@ -11,7 +11,13 @@
 
 This is for a centOS 7 Host. If the host is freshly deployed, run the install.sh  
 
-``curl https://raw.githubusercontent.com/michaelsstuff/arma3-server-scripts/master/install.sh | bash``
+```
+yum install git -y
+git clone https://github.com/michaelsstuff/Arma3-stuff.git
+cd Arma3-stuff/a3-server/
+bash install.sh
+
+```
 
 ## Headless
 
@@ -36,6 +42,8 @@ The script will automatically load all mods located in /home/steam/arma3server/m
 
 To download all mods (like your users would do with arma3sync), set the ``MODURL`` to your modsource URL and set ``MODUPDATE=true``
 
+Or use steam workshop id to download the mods. This variant will require a steam user that has the Arma 3 base game.
+The installer will ask if you want the workshop variant and configure it, or you can do configure it yourself in the config.cfg
 
 ### Logging
 
