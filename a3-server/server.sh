@@ -90,7 +90,8 @@ elif [[ $MODUPDATE = "workshop" ]]; then
     a3_id=107410
     for i in ${WS_IDS[*]}; do
       ./steamcmd.sh +login "${STEAMWSUSER}" "${STEAMWSPASS}" +workshop_download_item "${a3_id}" "$i" +quit
-      modname="$(curl -s https://steamcommunity.com/sharedfiles/filedetails/?id="${i}" | grep "<title>" | sed -e 's/<[^>]*>//g' |awk '{print $4}')" # still need to rework, so it grabs the full name!
+      modname="$(curl -s https://steamcommunity.com/sharedfiles/filedetails/?id="${i}" | grep "<title>" | sed -e 's/<[^>]*>//g' | cut -d ' ' -f 4-)" # still need to rework, so it grabs the full name!
+      printf "\n"
       modname_clean=$(echo "$modname"|dos2unix)
       ln -s "${home}/Steam/steamapps/workshop/content/${a3_id}/${i}" "${a3_dir}/mods/@${modname_clean}"
       cd "${a3_dir}/mods/@${modname_clean}" || exit

@@ -50,6 +50,10 @@ EOF
 chmod 664 /etc/systemd/system/arma3-hc.service
 systemctl daemon-reload
 
+# shellcheck source=config.cfg
+# shellcheck disable=SC1091
+source "$steam_home"config.cfg
+
 printf "\n"
 printf "Please enter steam user credentials for the server\n"
 printf "This user should be a blank user, with no games, vallets or anything!\n"
@@ -57,13 +61,16 @@ printf "Disable any 2 factor auth for this user\n"
 printf "\n"
 printf "Arma 3 dedicated server is a free tool, so DO NOT USER YOUR PERSONAL STEAM ACCCOUNT HERE!\n"
 printf "\n"
-read -rp "username:" STEAMUSER
-read -rp "password:" STEAMPASS
-if [[ -n $STEAMUSER ]]; then
-  sed -i "/STEAMUSER=/c\STEAMUSER=\"${STEAMUSER}\"" "$steam_home"config.cfg
+read -rp "username (${STEAMUSER}):" STEAMUSER_new
+if [[ -n $STEAMUSER_new ]]; then
+    STEAMUSER=${STEAMUSER_new}
+    sed -i "/STEAMUSER=/c\STEAMUSER=\"${STEAMUSER}\"" "$steam_home"config.cfg
 fi
-if [[ -n $STEAMPASS ]]; then
-  sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAMPASS}\"" "$steam_home"config.cfg
+
+read -rp "password (${STEAMPASS}):" STEAMPASS_new
+if [[ -n $STEAMPASS_new ]]; then
+    STEAMPASS=${STEAMPASS_new}
+    sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAMPASS}\"" "$steam_home"config.cfg
 fi
 
 is_set=false
@@ -83,17 +90,49 @@ if [[ $yn = "y" ]]; then
   printf "Please set the steam users steam guard to mail token, so we can now authentificate on this server\n"
   printf "\n"
   printf "Please enter the steam username, which owns Arma3\n"
-  read -rp "username: " STEAMWSUSER
-  sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAMWSUSER}\"" "$steam_home"config.cfg
-  read -rsp "password: " STEAMWSPASS
-  sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAMWSPASS}\"" "$steam_home"config.cfg
+
+  read -rp "username (${STEAMWSUSER}):" STEAMWSUSER_new
+  if [[ -n $STEAMWSUSER_new ]]; then
+    STEAMWSUSER=${STEAMWSUSER_new}
+    sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAMWSUSER}\"" "$steam_home"config.cfg
+  fi
+
+  read -rsp "password (${STEAMWSPASS}):" STEAMWSPASS_new
+  if [[ -n $STEAMWSPASS_new ]]; then
+    STEAMWSPASS=${STEAMWSPASS_new}
+    sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAMWSPASS}\"" "$steam_home"config.cfg
+  fi
+
+  sed -i "/MODUPDATE=/c\MODUPDATE=workshop" "$steam_home"config.cfg
   printf "\n"
   sudo -u steam bash -i -c "./steamcmd.sh +login ${STEAMWSUSER} ${STEAMWSPASS} +quit"
   printf "\n"
-  printf "Don't forget to configure your mod IDs as a list (WS_IDS) in %sconfig.cfg\n" "$steam_home"
-fi
 
-sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAMWSPASS}\"" "$steam_home"config.cfg
+  is_ynids_set=false
+  while [[ $is_ynids_set = "false" ]]; do
+    printf "\n"
+    read -rp "Do you want to configure the modlist now? You will need the workshop item IDs for this. (y|n)" ynids
+    printf "\n"
+    if [[ $ynids = "y" || $ynids = "n" ]]; then
+      is_ynids_set=true
+    fi
+  done
+  declare -a ws_ids
+  if [[ $ynids = "y" ]]; then
+    numbers_finished=false
+    while [ "$numbers_finished" == "false" ]; do
+      read -rp "Workshop ID or empty if you are finished:" id
+      if [[ $id =~ ^[0-9]+$ ]]; then
+        ws_ids+=("$id")
+      else
+        numbers_finished=true
+      fi
+    done
+  sed -i "/WS_IDS=/c\WS_IDS=(${ws_ids[*]})" "$steam_home"config.cfg
+  else
+    printf "Don't forget to configure your mod IDs as a list (WS_IDS) in %sconfig.cfg\n" "$steam_home"
+  fi
+fi
 
 printf "\n"
 printf "You can now start the server with \'systemctl start arma3-server.service\' \n"
