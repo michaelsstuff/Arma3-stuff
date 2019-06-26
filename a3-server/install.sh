@@ -5,6 +5,16 @@ yum install epel-release -y
 yum install -y glibc libstdc++ glibc.i686 libstdc++.i686 jq unzip dos2unix
 useradd -m steam
 cp server.sh hc.sh update-mods.sh "$steam_home"
+
+if [ ! -f ${steam_home}secret.key ]; then
+  cryptkey=$(< /dev/urandom tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+  echo "$cryptkey" > ${steam_home}secret.key
+  chmod 600 ${steam_home}secret.key
+  chown steam:steam ${steam_home}secret.key
+else
+  cryptkey=$(cat "$steam_home"secret.key)
+fi
+
 if [ ! -f "$steam_home"config.cfg ]; then
  cp config.cfg "$steam_home"config.cfg
 fi
@@ -54,6 +64,10 @@ systemctl daemon-reload
 # shellcheck disable=SC1091
 source "$steam_home"config.cfg
 
+
+echo foobar | openssl enc -aes-256-cbc -a -salt -pass pass:"${cryptkey}"
+echo "U2FsdGVkX1+cTNMgPtKnStYDtIWu8ZvodVqJXezW7rk=" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}"
+
 printf "\n"
 printf "Please enter steam user credentials for the server\n"
 printf "This user should be a blank user, with no games, vallets or anything!\n"
@@ -67,10 +81,14 @@ if [[ -n $STEAMUSER_new ]]; then
     sed -i "/STEAMUSER=/c\STEAMUSER=\"${STEAMUSER}\"" "$steam_home"config.cfg
 fi
 
-read -rp "password (${STEAMPASS}):" STEAMPASS_new
+# shellcheck disable=2153
+if [[ -n $STEAMPASS ]]; then
+  STEAMPASS_decrypted=$(echo "${STEAMPASS}" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}")
+fi
+read -rp "password (${STEAMPASS_decrypted}):" STEAMPASS_new
 if [[ -n $STEAMPASS_new ]]; then
-    STEAMPASS=${STEAMPASS_new}
-    sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAMPASS}\"" "$steam_home"config.cfg
+    STEAMPASS_new_crypted=$(echo "${STEAMPASS_new}" | openssl enc -aes-256-cbc -a -salt -pass pass:"${cryptkey}")
+    sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAMPASS_new_crypted}\"" "$steam_home"config.cfg
 fi
 
 is_set=false
@@ -97,10 +115,14 @@ if [[ $yn = "y" ]]; then
     sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAMWSUSER}\"" "$steam_home"config.cfg
   fi
 
-  read -rsp "password (${STEAMWSPASS}):" STEAMWSPASS_new
+  # shellcheck disable=2153
+  if [[ -n $STEAMWSPASS ]]; then
+    STEAMWSPASS_decrypted=$(echo "${STEAMWSPASS}" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}")
+  fi
+  read -rp "password (${STEAMWSPASS_decrypted}):" STEAMPASS_new
   if [[ -n $STEAMWSPASS_new ]]; then
-    STEAMWSPASS=${STEAMWSPASS_new}
-    sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAMWSPASS}\"" "$steam_home"config.cfg
+      STEAMWSPASS_new_crypted=$(echo "${STEAMWSPASS_new}" | openssl enc -aes-256-cbc -a -salt -pass pass:"${cryptkey}")
+      sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAMWSPASS_new_crypted}\"" "$steam_home"config.cfg
   fi
 
   sed -i "/MODUPDATE=/c\MODUPDATE=workshop" "$steam_home"config.cfg

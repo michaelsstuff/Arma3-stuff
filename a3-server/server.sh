@@ -30,14 +30,25 @@ LOGFILE=$a3_dir/logs/"arma3"_$(date "$TIMESTAMP_FORMAT")_PID-$pid.log
 # Redirect stdout/stderr to tee to write the log file
 exec > >(tee -a "${LOGFILE}") 2>&1
 
+# get my decrypt key
+if [ ! -f "${home}"/secret.key ]; then
+  printf "Error! Could not find my decryption for stored passwords.\n"
+  exit 1
+else
+  cryptkey=$(cat "${home}"/secret.key)
+fi
+
 # check for required vars
 if [ -z "$STEAMUSER" ]; then
   printf "Steam username not given. Please check settings in %s \n" "${home}/config.cfg"
   exit 1
 fi
+
 if [ -z "$STEAMPASS" ]; then
   printf "Steam Password not given. Please check settings in %s \n" "${home}/config.cfg"
   exit 1
+else
+  STEAMPASS_decrypted=$(echo "${STEAMPASS}" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}")
 fi
 
 # check if config file exists
@@ -48,7 +59,7 @@ fi
 
 # download arma3 server
 cd "$home" || exit
-./steamcmd.sh +login "$STEAMUSER" "$STEAMPASS" +force_install_dir "$a3_dir" +app_update 233780 validate +quit
+./steamcmd.sh +login "$STEAMUSER" "$STEAMPASS_decrypted" +force_install_dir "$a3_dir" +app_update 233780 validate +quit
 
 # check profile folder
 if [ ! -d  "${home}/.local/share/Arma 3" ]; then
@@ -88,8 +99,9 @@ elif [[ $MODUPDATE = "workshop" ]]; then
     exit 1
   else
     a3_id=107410
+    STEAMWSPASS_decrypted=$(echo "${STEAMWSPASS}" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}")
     for i in ${WS_IDS[*]}; do
-      ./steamcmd.sh +login "${STEAMWSUSER}" "${STEAMWSPASS}" +workshop_download_item "${a3_id}" "$i" +quit
+      ./steamcmd.sh +login "${STEAMWSUSER}" "${STEAMWSPASS_decrypted}" +workshop_download_item "${a3_id}" "$i" +quit
       modname="$(curl -s https://steamcommunity.com/sharedfiles/filedetails/?id="${i}" | grep "<title>" | sed -e 's/<[^>]*>//g' | cut -d ' ' -f 4-)" # still need to rework, so it grabs the full name!
       printf "\n"
       modname_clean=$(echo "$modname"|dos2unix)
