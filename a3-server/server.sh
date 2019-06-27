@@ -14,6 +14,13 @@ else
   printf "Please create %s, and set at least STEAMUSER and STEAMPASS" "${home}/config.cfg"
 fi
 
+if [ ! -f "${home}"secret.key ]; then
+  printf "Please create a decryption key!"
+  exit 1
+else
+  cryptkey=$(cat "$home"secret.key)
+fi
+
 declare -a mods_array
 pid=$$
 
@@ -23,6 +30,18 @@ if [ ! -d  "$a3_dir"/logs ]; then
     exit 1
   fi
 fi
+
+encrypt() {
+  local encrypt
+  encrypt="$(echo "${1}" | openssl enc -a -e -aes-256-cbc -pbkdf2 -pass pass:"${cryptkey}" 2>/dev/null)"
+  echo "$encrypt"
+}
+
+decrypt() {
+  local myresult
+  myresult="$(echo "${1}" | openssl enc -a -d -aes-256-cbc -pbkdf2 -pass pass:"${cryptkey}" 2>/dev/null)"
+  echo "$myresult"
+}
 
 # logging
 TIMESTAMP_FORMAT=${TIMESTAMP_FORMAT:-"+%Y-%m-%d"}
@@ -48,7 +67,7 @@ if [ -z "$STEAMPASS" ]; then
   printf "Steam Password not given. Please check settings in %s \n" "${home}/config.cfg"
   exit 1
 else
-  STEAMPASS_decrypted=$(echo "${STEAMPASS}" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}")
+  STEAMPASS_decrypted=$(decrypt "${STEAMPASS}")
 fi
 
 # check if config file exists
@@ -99,7 +118,7 @@ elif [[ $MODUPDATE = "workshop" ]]; then
     exit 1
   else
     a3_id=107410
-    STEAMWSPASS_decrypted=$(echo "${STEAMWSPASS}" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}")
+    STEAMWSPASS_decrypted=$(decrypt "${STEAMWSPASS}")
     for i in ${WS_IDS[*]}; do
       ./steamcmd.sh +login "${STEAMWSUSER}" "${STEAMWSPASS_decrypted}" +workshop_download_item "${a3_id}" "$i" +quit
       modname="$(curl -s https://steamcommunity.com/sharedfiles/filedetails/?id="${i}" | grep "<title>" | sed -e 's/<[^>]*>//g' | cut -d ' ' -f 4-)" # still need to rework, so it grabs the full name!
