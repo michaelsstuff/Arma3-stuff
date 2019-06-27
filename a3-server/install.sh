@@ -2,18 +2,34 @@
 steam_home="/home/steam/"
 a3_dir="$steam_home"arma3server
 yum install epel-release -y
-yum install -y glibc libstdc++ glibc.i686 libstdc++.i686 jq unzip dos2unix
+yum install -y glibc libstdc++ glibc.i686 libstdc++.i686 jq unzip dos2unix openssl
 useradd -m steam
 cp server.sh hc.sh update-mods.sh "$steam_home"
 
+if [ "$1" = "-s" ]; then
+  silent=true
+fi
+
 if [ ! -f ${steam_home}secret.key ]; then
-  cryptkey=$(< /dev/urandom tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+  cryptkey=$(< /dev/urandom hexdump -n 16 -e '4/4 "%08X" 1 "\n"')
   echo "$cryptkey" > ${steam_home}secret.key
   chmod 600 ${steam_home}secret.key
   chown steam:steam ${steam_home}secret.key
 else
   cryptkey=$(cat "$steam_home"secret.key)
 fi
+
+encrypt() {
+  local encrypt
+  encrypt="$(echo "${1}" | openssl enc -a -e -aes-256-cbc -pbkdf2 -pass pass:"${cryptkey}" 2>/dev/null)"
+  echo "$encrypt"
+}
+
+decrypt() {
+  local myresult
+  myresult="$(echo "${1}" | openssl enc -a -d -aes-256-cbc -pbkdf2 -pass pass:"${cryptkey}" 2>/dev/null)"
+  echo "$myresult"
+}
 
 if [ ! -f "$steam_home"config.cfg ]; then
  cp config.cfg "$steam_home"config.cfg
@@ -60,13 +76,13 @@ EOF
 chmod 664 /etc/systemd/system/arma3-hc.service
 systemctl daemon-reload
 
+if [ $silent = "true" ]; then
+  exit
+fi
+
 # shellcheck source=config.cfg
 # shellcheck disable=SC1091
 source "$steam_home"config.cfg
-
-
-echo foobar | openssl enc -aes-256-cbc -a -salt -pass pass:"${cryptkey}"
-echo "U2FsdGVkX1+cTNMgPtKnStYDtIWu8ZvodVqJXezW7rk=" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}"
 
 printf "\n"
 printf "Please enter steam user credentials for the server\n"
@@ -83,11 +99,11 @@ fi
 
 # shellcheck disable=2153
 if [[ -n $STEAMPASS ]]; then
-  STEAMPASS_decrypted=$(echo "${STEAMPASS}" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}")
+  STEAMPASS_decrypted=$(decrypt "${STEAMPASS}")
 fi
 read -rp "password (${STEAMPASS_decrypted}):" STEAMPASS_new
 if [[ -n $STEAMPASS_new ]]; then
-    STEAMPASS_new_crypted=$(echo "${STEAMPASS_new}" | openssl enc -aes-256-cbc -a -salt -pass pass:"${cryptkey}")
+    STEAMPASS_new_crypted=$(encrypt "${STEAMPASS_new}")
     sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAMPASS_new_crypted}\"" "$steam_home"config.cfg
 fi
 
@@ -117,11 +133,11 @@ if [[ $yn = "y" ]]; then
 
   # shellcheck disable=2153
   if [[ -n $STEAMWSPASS ]]; then
-    STEAMWSPASS_decrypted=$(echo "${STEAMWSPASS}" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"${cryptkey}")
+    STEAMWSPASS_decrypted=$(decrypt "${STEAMWSPASS}")
   fi
   read -rp "password (${STEAMWSPASS_decrypted}):" STEAMPASS_new
   if [[ -n $STEAMWSPASS_new ]]; then
-      STEAMWSPASS_new_crypted=$(echo "${STEAMWSPASS_new}" | openssl enc -aes-256-cbc -a -salt -pass pass:"${cryptkey}")
+      STEAMWSPASS_new_crypted=$(encrypt "${STEAMWSPASS_new}")
       sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAMWSPASS_new_crypted}\"" "$steam_home"config.cfg
   fi
 
