@@ -75,3 +75,5 @@ printf "sudo -u steam /home/steam/steamcmd.sh +login %s %s +quit \n" "${STEAM_WS
 printf "\n"
 printf "systemctl start arma3-hc.service"
 printf "\n"
+
+/bin/bash
