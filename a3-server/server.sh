@@ -14,7 +14,7 @@ else
   printf "Please create %s, and set at least STEAMUSER and STEAMPASS" "${home}/config.cfg"
 fi
 
-if [ ! -f "${home}"secret.key ]; then
+if [ ! -f "${home}"/secret.key ]; then
   printf "Please create a decryption key!"
   exit 1
 else
