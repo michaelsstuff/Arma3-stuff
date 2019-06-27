@@ -15,6 +15,8 @@ if ! $hcloud ssh-key list | grep "$(hostname)"; then
     $hcloud ssh-key create --name "$(hostname)" --public-key "$pubkeystring"
 fi
 
+cryptkey=$(< /dev/urandom tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+
 test_ssh() {
     ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -i ssh.key -q root@"$1" exit
 }
@@ -74,18 +76,19 @@ create_server() {
 yum install git -y
 git clone https://github.com/michaelsstuff/Arma3-stuff.git
 cd Arma3-stuff/a3-server/
-bash install.sh
-cat <<EOF >  /home/steam/config.cfg
-MODURL="ftp://158.69.123.76/"
-STEAMUSER="$steamu"
-STEAMPASS="$steamp"
-home="/home/steam"
-a3_dir="/home/steam/arma3server"
-#NOBASIC=true
-MODUPDATE=true
+bash install.sh -s
+echo "$cryptkey" > /home/steam/secret.key
+sed -i "/STEAMUSER=/c\STEAMUSER=\"${steamu}\" /home/steam/config.cfg
+sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAMPASS_new_crypted}\"" "$steam_home"config.cfg
 
-EOF
-s
+sed -i "/MODUPDATE=/c\MODUPDATE=workshop" "$steam_home"config.cfg
+sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAMWSUSER}\"" "$steam_home"config.cfg
+sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAMWSPASS_new_crypted}\"" "$steam_home"config.cfg
+sed -i "/WS_IDS=/c\WS_IDS=(${ws_ids[*]})" "$steam_home"config.cfg
+
+curl -sL https://raw.githubusercontent.com/michaelsstuff/Arma3-stuff/master/a3-server/server.cfg -o "/home/steam/arma3server/server.cfg
+
+
 cat <<EOF >  /home/steam/arma3server/server.cfg
 hostname       = "My Arma 3 Server";
 password     = "$SERVERPASS";
