@@ -14,11 +14,11 @@ else
   printf "Please create %s, and set at least STEAMUSER and STEAMPASS" "${home}/config.cfg"
 fi
 
-if [ ! -f "${home}"/secret.key ]; then
+if [ -f "${home}"/secret.key ]; then
+  cryptkey=$(cat "$home"/secret.key)
+else
   printf "Please create a decryption key!"
   exit 1
-else
-  cryptkey=$(cat "$home"secret.key)
 fi
 
 declare -a mods_array
