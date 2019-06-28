@@ -74,6 +74,8 @@ if [ -n "$HC_COUNT" ]; then
       $hcloud server create --image centos-7 --name arma3hc"$i" --type cx21 --ssh-key "$SSHNAME"
       ip="$($hcloud server list -o noheader | grep arma3hc"$i" | awk '{print $4}')"
       hc_ip+=("$ip")
+      steamuser=$(eval STEAM_USER_HC"$i")
+      steampass=$(eval STEAM_PASW_HC"$i")
       sleep 10
       while true; do
         test_ssh "$ip" && break
@@ -85,8 +87,8 @@ git clone https://github.com/michaelsstuff/Arma3-stuff.git
 cd Arma3-stuff/a3-server/
 bash install.sh -s
 echo "$CRYPTKEY" > /home/steam/secret.key
-sed -i "/STEAMUSER=/c\STEAMUSER=\"${STEAM_USER_SRV}\"" "$cfg"
-sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAM_PASW_SRV}\"" "$cfg"
+sed -i "/STEAMUSER=/c\STEAMUSER=\"${steamuser}\"" "$cfg"
+sed -i "/STEAMPASS=/c\STEAMPASS=\"${steampass}\"" "$cfg"
 sed -i "/MODUPDATE=/c\MODUPDATE=workshop" "$cfg"
 sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAM_WS_USER_SRV}\"" "$cfg"
 sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAM_WS_PASW_SRV}\"" "$cfg"
