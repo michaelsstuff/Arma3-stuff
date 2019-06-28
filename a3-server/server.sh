@@ -102,11 +102,16 @@ if [ ! -d "$a3_dir"/mods ]; then
   fi
 fi
 
-if [[ $MODUPDATE == "ftp" ]]; then
-  wget -m -c --restrict-file-names=lowercase -P "$a3_dir"/mods/ -nH "${MODURL}"
-elif [[ $MODUPDATE == "direct" ]]; then
+if [[ $MODMETHOD == "ftp" ]]; then
+  if [[ -n "${FTP_USER}" ]]; then
+    ftp_pw=$(decrypt "${FTP_PASS}")
+    wget --ftp-user "${FTP_USER}" --ftp-password "${ftp_pw}" -m -c --restrict-file-names=lowercase -P "$a3_dir"/mods/ -nH "${MODURL}"
+  else
+    wget -m -c --restrict-file-names=lowercase -P "$a3_dir"/mods/ -nH "${MODURL}"
+  fi
+elif [[ $MODMETHOD == "direct" ]]; then
   /bin/bash "${home}"/update-mods.sh
-elif [[ $MODUPDATE == "workshop" ]]; then
+elif [[ $MODMETHOD == "ws" ]]; then
   if [[ -z $WS_IDS ]]; then
     printf "Workshop mod IDs not configured, please set WS_IDS in the config.cfg\n"
     exit 1

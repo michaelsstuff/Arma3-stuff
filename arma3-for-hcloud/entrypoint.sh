@@ -57,13 +57,30 @@ bash install.sh -s
 echo "$CRYPTKEY" > /home/steam/secret.key
 sed -i "/STEAMUSER=/c\STEAMUSER=\"${STEAM_USER_SRV}\"" "$cfg"
 sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAM_PASW_SRV}\"" "$cfg"
-sed -i "/MODUPDATE=/c\MODUPDATE=workshop" "$cfg"
+sed -i "/SERVERPASS=/c\SERVERPASS=\"${SERVERPASS}\"" "$cfg"
+EOC
+
+if [ "$MODMETHOD" = "ws" ]; then
+  ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i $sshkeyfile root@"$ip" <<EOC
+sed -i "/MODMETHOD=/c\MODMETHOD=ws" "$cfg"
 sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAM_WS_USER_SRV}\"" "$cfg"
 sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAM_WS_PASW_SRV}\"" "$cfg"
 sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
-sed -i "/SERVERPASS=/c\SERVERPASS=\"${SERVERPASS}\"" "$cfg"
-
 EOC
+
+elif [ "$MODMETHOD" = "ftp" ]; then
+  ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i $sshkeyfile root@"$ip" <<EOC
+sed -i "/MODMETHOD=/c\MODMETHOD=ftp" "$cfg"
+sed -i "/FTP_USER=/c\FTP_USER=\"${FTP_USER}\"" "$cfg"
+sed -i "/FTP_PASS=/c\FTP_PASS=\"${FTP_PASS}\"" "$cfg"
+sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
+EOC
+
+else
+  ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i $sshkeyfile root@"$ip" <<EOC
+sed -i "/MODMETHOD=/c\MODMETHOD=false" "$cfg"
+EOC
+fi
 
 printf "\n"
 
@@ -89,15 +106,35 @@ bash install.sh -s
 echo "$CRYPTKEY" > /home/steam/secret.key
 sed -i "/STEAMUSER=/c\STEAMUSER=\"${steamuser}\"" "$cfg"
 sed -i "/STEAMPASS=/c\STEAMPASS=\"${steampass}\"" "$cfg"
-sed -i "/MODUPDATE=/c\MODUPDATE=workshop" "$cfg"
-sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAM_WS_USER_SRV}\"" "$cfg"
-sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAM_WS_PASW_SRV}\"" "$cfg"
-sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
 sed -i "/SERVERPASS=/c\SERVERPASS=\"${SERVERPASS}\"" "$cfg"
 sed -i "/ISHC=/c\ISHC=\"true\"" "$cfg"
 sed -i "/SERVER=/c\SERVER=\"${server_ip}\"" "$cfg"
 
 EOC
+
+      if [ "$MODMETHOD" = "ws" ]; then
+        ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i $sshkeyfile root@"$ip" <<EOC
+sed -i "/MODMETHOD=/c\MODMETHOD=ws" "$cfg"
+sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAM_WS_USER_SRV}\"" "$cfg"
+sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAM_WS_PASW_SRV}\"" "$cfg"
+sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
+EOC
+        give_auth_notice=true
+
+      elif [ "$MODMETHOD" = "ftp" ]; then
+        ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i $sshkeyfile root@"$ip" <<EOC
+sed -i "/MODMETHOD=/c\MODMETHOD=ftp" "$cfg"
+sed -i "/FTP_USER=/c\FTP_USER=\"${FTP_USER}\"" "$cfg"
+sed -i "/FTP_PASS=/c\FTP_PASS=\"${FTP_PASS}\"" "$cfg"
+sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
+EOC
+
+      else
+        ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i $sshkeyfile root@"$ip" <<EOC
+sed -i "/MODMETHOD=/c\MODMETHOD=false" "$cfg"
+EOC
+      fi
+
     done
   fi
 fi
@@ -110,22 +147,29 @@ sed -i "/HC=/c\HC=(${hc_ip[*]})" "$cfg"
 EOC
 delete=(127.0.0.1)
 # shellcheck disable=SC2128
-hc_ip=( "${hc_ip[@]/$delete}" )
+hc_ip=("${hc_ip[@]/$delete/}")
 
-STEAM_WS_PASW_SRV_DECRYPTED=$(decrypt "${STEAM_WS_PASW_SRV}")
-printf "please log into the arma3server and authentificate once with the steam workshop user \n"
-printf "\n"
-printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -i %s root@%s \"sudo -u steam /home/steam/steamcmd.sh +login %s %s +quit\" \n" "$sshkeyfile" "$server_ip" "${STEAM_WS_USER_SRV}" "${STEAM_WS_PASW_SRV_DECRYPTED}"
-printf "\n"
-printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -i %s root@%s \"systemctl start arma3-server\" \n" "$sshkeyfile" "$server_ip"
-printf "\n"
-printf "Do the same for the Headless clients: \n"
-printf "\n"
-for ipadr in "${hc_ip[@]}"; do
-  printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -i %s root@%s \"sudo -u steam /home/steam/steamcmd.sh +login %s %s +quit\" \n" "$sshkeyfile" "$ipadr" "${STEAM_WS_USER_SRV}" "${STEAM_WS_PASW_SRV_DECRYPTED}"
-  printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -i %s root@%s \"systemctl start arma3-server\" \n" "$sshkeyfile" "$ipadr"
+if [ "$give_auth_notice" = "true" ]; then
+  STEAM_WS_PASW_SRV_DECRYPTED=$(decrypt "${STEAM_WS_PASW_SRV}")
+  printf "please log into the arma3server and authentificate once with the steam workshop user \n"
   printf "\n"
-done
-printf "\n"
-printf "\n"
-/bin/bash
+  printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -i %s root@%s \"sudo -u steam /home/steam/steamcmd.sh +login %s %s +quit\" \n" "$sshkeyfile" "$server_ip" "${STEAM_WS_USER_SRV}" "${STEAM_WS_PASW_SRV_DECRYPTED}"
+  printf "\n"
+  printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -i %s root@%s \"systemctl start arma3-server\" \n" "$sshkeyfile" "$server_ip"
+  printf "\n"
+  printf "Do the same for the Headless clients: \n"
+  printf "\n"
+  for ipadr in "${hc_ip[@]}"; do
+    printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -i %s root@%s \"sudo -u steam /home/steam/steamcmd.sh +login %s %s +quit\" \n" "$sshkeyfile" "$ipadr" "${STEAM_WS_USER_SRV}" "${STEAM_WS_PASW_SRV_DECRYPTED}"
+    printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -i %s root@%s \"systemctl start arma3-server\" \n" "$sshkeyfile" "$ipadr"
+    printf "\n"
+  done
+  printf "\n"
+  printf "\n"
+  /bin/bash
+else
+  ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i "$sshkeyfile" root@"$server_ip" "systemctl start arma3-server"
+  for ipadr in "${hc_ip[@]}"; do
+    ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i "$sshkeyfile" root@"$ipadr" "systemctl start arma3-server"
+  done
+fi
