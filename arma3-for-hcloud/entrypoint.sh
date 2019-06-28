@@ -102,6 +102,16 @@ EOC
   fi
 fi
 
+# adding localhost for the server itself
+hc_ip+=(127.0.0.1)
+ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i $sshkeyfile root@"$server_ip" <<EOC
+sed -i "/HC=/c\HC=(${hc_ip[*]})" "$cfg"
+
+EOC
+delete=(127.0.0.1)
+# shellcheck disable=SC2128
+hc_ip=( "${hc_ip[@]/$delete}" )
+
 STEAM_WS_PASW_SRV_DECRYPTED=$(decrypt "${STEAM_WS_PASW_SRV}")
 printf "please log into the arma3server and authentificate once with the steam workshop user \n"
 printf "\n"

@@ -3,6 +3,7 @@
 # Please fill out the following variables.
 # Or edit the config.cfg
 #
+
 home="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 a3_dir="${home}/arma3server" # this could be overwritten by the config.cfg
 
@@ -70,6 +71,10 @@ if [ ! -f "$a3_dir"/server.cfg ]; then
 fi
 sed -i "/\/\/password     =/c\password     = \"${SERVERPASS}\"" "$a3_dir"/server.cfg
 sed -i "/password     =/c\password     = \"${SERVERPASS}\"" "$a3_dir"/server.cfg
+
+# add the Headlessclients to the server config
+ip_string=$(echo \{"\""$(echo ${HC[*]} | sed -e 's/\s\+/","/g')"\"};")
+sed -i "/headlessClients\[\]/c\headlessClients\[\] = "${ip_string}"" "$a3_dir"/server.cfg
 
 # download arma3 server
 cd "$home" || exit
