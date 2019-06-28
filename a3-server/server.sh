@@ -14,10 +14,11 @@ else
   printf "Please create %s, and set at least STEAMUSER and STEAMPASS" "${home}/config.cfg"
 fi
 
+# get my decrypt key
 if [ -f "${home}"/secret.key ]; then
-  cryptkey=$(cat "$home"/secret.key)
+  CRYPTKEY=$(cat "$home"/secret.key)
 else
-  printf "Please create a decryption key!"
+  printf "Error! Could not find my decryption for stored passwords.\n"
   exit 1
 fi
 
@@ -49,13 +50,7 @@ LOGFILE=$a3_dir/logs/"arma3"_$(date "$TIMESTAMP_FORMAT")_PID-$pid.log
 # Redirect stdout/stderr to tee to write the log file
 exec > >(tee -a "${LOGFILE}") 2>&1
 
-# get my decrypt key
-if [ ! -f "${home}"/secret.key ]; then
-  printf "Error! Could not find my decryption for stored passwords.\n"
-  exit 1
-else
-  cryptkey=$(cat "${home}"/secret.key)
-fi
+
 
 # check for required vars
 if [ -z "$STEAMUSER" ]; then
