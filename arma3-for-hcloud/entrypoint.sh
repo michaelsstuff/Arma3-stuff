@@ -74,8 +74,8 @@ if [ -n "$HC_COUNT" ]; then
       $hcloud server create --image centos-7 --name arma3hc"$i" --type cx21 --ssh-key "$SSHNAME"
       ip="$($hcloud server list -o noheader | grep arma3hc"$i" | awk '{print $4}')"
       hc_ip+=("$ip")
-      steamuser=$(eval STEAM_USER_HC"$i")
-      steampass=$(eval STEAM_PASW_HC"$i")
+      steamuser=$(eval echo "$""STEAM_USER_HC""$i")
+      steampass=$(eval echo "$""STEAM_PASW_HC""$i")
       sleep 10
       while true; do
         test_ssh "$ip" && break
