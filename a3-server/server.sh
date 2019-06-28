@@ -69,8 +69,8 @@ if [ ! -f "$a3_dir"/server.cfg ]; then
   printf "Did not find a server.cfg in %s. I will download a default one. \n" "$a3_dir"
   curl -sL https://raw.githubusercontent.com/michaelsstuff/Arma3-stuff/master/a3-server/server.cfg -o "$a3_dir"/server.cfg
 fi
-sed -i "/\/\/password     =/c\password     = \"${SERVERPASS}\"" "$a3_dir"/server.cfg
-sed -i "/password     =/c\password     = \"${SERVERPASS}\"" "$a3_dir"/server.cfg
+sed -i "/\/\/password     =/c\password     = \"${SERVERPASS}\";" "$a3_dir"/server.cfg
+sed -i "/password     =/c\password     = \"${SERVERPASS}\";" "$a3_dir"/server.cfg
 
 # add the Headlessclients to the server config
 ip_string=$(echo \{"\""$(echo ${HC[*]} | sed -e 's/\s\+/","/g')"\"};")
@@ -151,11 +151,11 @@ mods=$(
 
 # getting tuned basic config, tuned for about 100 Mbit/s synchronous
 if [[ $NOBASIC != "true" ]]; then
-  if [[ ! -f "${home}"/config.md5 ]]; then
+  if [[ ! -f "${a3_dir}"/basic.md5 ]]; then
     curl -sL https://raw.githubusercontent.com/michaelsstuff/Arma3-stuff/master/a3-server/basic.cfg -o "$a3_dir"/basic.cfg
-    md5sum "${home}"/config.cfg >"${home}"/config.md5
+    md5sum "${a3_dir}"/basic.cfg >"${a3_dir}"/basic.md5
   else
-    if ! md5sum -c "${home}"/config.md5 --status; then
+    if ! md5sum -c "${a3_dir}"/basic.md5 --status; then
       curl -sL https://raw.githubusercontent.com/michaelsstuff/Arma3-stuff/master/a3-server/basic.cfg -o "$a3_dir"/basic.cfg
     fi
   fi
