@@ -33,13 +33,13 @@ fi
 
 encrypt() {
   local encrypt
-  encrypt="$(echo "${1}" | openssl enc -a -e -aes-256-cbc -pass pass:"${CRYPTKEY}" 2>/dev/null)"
+  encrypt="$(echo "${1}" | openssl enc -a -e -aes-256-cbc -md md5 -pass pass:"${CRYPTKEY}" 2>/dev/null)"
   echo "$encrypt"
 }
 
 decrypt() {
   local myresult
-  myresult="$(echo "${1}" | openssl enc -a -d -aes-256-cbc -pass pass:"${CRYPTKEY}" 2>/dev/null)"
+  myresult="$(echo "${1}" | openssl enc -a -d -aes-256-cbc -md md5 -pass pass:"${CRYPTKEY}" 2>/dev/null)"
   echo "$myresult"
 }
 
