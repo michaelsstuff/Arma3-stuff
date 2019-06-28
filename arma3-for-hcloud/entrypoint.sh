@@ -93,6 +93,7 @@ sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAM_WS_PASW_SRV}\"" "$cfg"
 sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
 sed -i "/SERVERPASS=/c\SERVERPASS=\"${SERVERPASS}\"" "$cfg"
 sed -i "/ISHC=/c\ISHC=\"true\"" "$cfg"
+sed -i "/SERVER=/c\SERVER=\"${server_ip}\"" "$cfg"
 
 EOC
     done
