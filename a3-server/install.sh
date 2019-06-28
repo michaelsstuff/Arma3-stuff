@@ -4,7 +4,7 @@ a3_dir="$steam_home"arma3server
 yum install epel-release -y
 yum install -y glibc libstdc++ glibc.i686 libstdc++.i686 jq unzip dos2unix openssl
 id -u steam &>/dev/null || useradd -m steam
-cp server.sh hc.sh update-mods.sh "$steam_home"
+cp server.sh update-mods.sh "$steam_home"
 
 if [ "$1" = "-s" ]; then
   silent=true
@@ -59,21 +59,6 @@ WantedBy=multi-user.target
 
 EOF
 chmod 664 /etc/systemd/system/arma3-server.service
-cat <<EOF >/etc/systemd/system/arma3-hc.service
-[Unit]
-Description=Arma 3 Headless Client
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-ExecStart=${steam_home}hc.sh
-User=steam
-
-[Install]
-WantedBy=multi-user.target
-
-EOF
-chmod 664 /etc/systemd/system/arma3-hc.service
 systemctl daemon-reload
 
 if [ $silent = "true" ]; then
@@ -174,7 +159,6 @@ fi
 
 printf "\n"
 printf "You can now start the server with \'systemctl start arma3-server.service\' \n"
-printf "Or you can start the headless client with \'systemctl start arma3-hc.service\' \n"
 printf "\n"
 printf "The initial start will take some time, as we have to download arma3 server\n"
 printf "\n"
