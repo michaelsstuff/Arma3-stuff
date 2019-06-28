@@ -25,13 +25,13 @@ fi
 
 encrypt() {
   local encrypt
-  encrypt="$(echo "${1}" | openssl enc -a -e -aes-256-cbc -pbkdf2 -pass pass:"${CRYPTKEY}" 2>/dev/null)"
+  encrypt="$(echo "${1}" | openssl enc -a -e -aes-256-cbc -pass pass:"${CRYPTKEY}" 2>/dev/null)"
   echo "$encrypt"
 }
 
 decrypt() {
   local myresult
-  myresult="$(echo "${1}" | openssl enc -a -d -aes-256-cbc -pbkdf2 -pass pass:"${CRYPTKEY}" 2>/dev/null)"
+  myresult="$(echo "${1}" | openssl enc -a -d -aes-256-cbc -pass pass:"${CRYPTKEY}" 2>/dev/null)"
   echo "$myresult"
 }
 
@@ -73,7 +73,7 @@ printf "\n"
 printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -i %s root@%s \n" "$sshkeyfile" "$ip" 
 printf "sudo -u steam /home/steam/steamcmd.sh +login %s %s +quit \n" "${STEAM_WS_USER_SRV}" "${STEAM_WS_PASW_SRV_DECRYPTED}"
 printf "\n"
-printf "systemctl start arma3-hc.service"
+printf "systemctl start arma3-server"
 printf "\n"
 
 /bin/bash
