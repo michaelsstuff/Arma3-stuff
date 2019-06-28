@@ -62,7 +62,7 @@ The account should not use any 2 Factor auth.
 
 We need an encrypted password for this field. You can genereate it like this:
 
-`echo "MySteamPassord" | openssl enc -aes-256-cbc -a -salt -pass pass:"${CRYPTKEY}"`
+`echo "MySteamPassord" | openssl enc -a -e -aes-256-cbc -md md5 -pass pass:"${CRYPTKEY}"`
 
 ### STEAM_WS_USER_SRV
 
@@ -73,9 +73,9 @@ We will only use this account to download the workshop items, not to run the ser
 
 We need an encrypted password for this field. You can genereate it like this:
 
-`echo "MySteamPassord" | openssl enc -aes-256-cbc -a -salt -pass pass:"${CRYPTKEY}"`
+`echo "MySteamPassord" | openssl enc -a -e -aes-256-cbc -md md5 -pass pass:"${CRYPTKEY}"`
 
-## Build and start like this:
+## Build and start like this
 
 ```bash
 docker build -t arma3-hetzner/deploy .
