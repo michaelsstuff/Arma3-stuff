@@ -67,7 +67,7 @@ EOC
 
 printf "\n"
 
-if [ -z "$HC_COUNT" ]; then
+if [ -n "$HC_COUNT" ]; then
   if [ "$HC_COUNT" -gt "0" ]; then
     declare -a hc_ip
     for i in $(seq 1 "$HC_COUNT"); do
