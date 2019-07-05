@@ -8,9 +8,9 @@ else
   exit 1
 fi
 
-home="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-moddir="${home}/arma3server/mods/"
-update_list="${home}/arma3server/modupdate.latest" 
+  home="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+  moddir="${home}/arma3server/mods/"
+  update_list="${home}/arma3server/modupdate.latest" 
 
 if [ -f "$home/config.cfg" ]; then
 # shellcheck source=config.cfg
@@ -26,6 +26,25 @@ fi
 
 # compare versions
 function version_lt() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; }
+
+# generic
+dowload () {
+  mod_version="$(curl -u "$githubuser":"$githubtoken" -s https://api.github.com/repos/${team}/${project}/releases/latest | jq -r .tag_name)"
+if [ -n "$mod_version" ]; then
+  if version_lt "${versions[$mod]}" "$mod_version"; then
+    printf "CBA has newer version %s - updating .... \n" "$mod_version"
+    mod_url="$(curl -u "$githubuser":"$githubtoken" -s https://api.github.com/repos/${team}/${project}/releases/latest | jq -r .assets[].browser_download_url)"
+    curl -L -s "$mod_url" -o mod.zip
+    modname_dir="$(unzip -Ll mod.zip  | awk 'NR==4{print $4;}' | tr -d ^)"
+    rm -fr "$moddir""$modname_dir"
+    unzip -qCL mod.zip -d "$moddir"
+    rm -f mod.zip
+    versions[$mod]="$mod_version"
+  else
+    printf "CBA is up to date - %s \n" "${versions[cba]}"
+  fi
+fi
+}
 
 # CBA3
 cba3_version="$(curl -u "$githubuser":"$githubtoken" -s https://api.github.com/repos/CBATeam/CBA_A3/releases/latest | jq -r .tag_name)"
