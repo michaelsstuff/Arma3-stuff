@@ -1,9 +1,10 @@
 FROM golang:alpine
-ENV HTTP_PROXY "http://10.0.75.1:8080"
-ENV HTTPS_PROXY "http://10.0.75.1:8080"
 
 RUN apk update \
-	&& apk add git
+	&& apk add git bash openssh openssl
 RUN go get -u github.com/hetznercloud/cli/cmd/hcloud
 
-ENTRYPOINT ["/go/bin/hcloud"]
+WORKDIR /root
+COPY id_ecdsa id_ecdsa.pub /root/.ssh/
+COPY entrypoint.sh /root/
+CMD ["/root/entrypoint.sh"]
