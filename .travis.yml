@@ -1,18 +1,17 @@
-language: shell
-
-services:
-  - docker
-
-jobs:
+matrix:
   include:
-    - stage: test
+    - language: shell
       script:
         - find . -name "*.sh" -type f -exec bash -c 'shopt -s globstar; shellcheck -x {}' \;
+    - language: node_js
+          - build-tools-25.0.3
+      node_js:
+        - '12'
+      install:
+        - npm install -g markdownlint-cli
+      script:
+        - markdownlint *.md
 
-language: node_js
-node_js:
-- '6'
-install:
-- npm install -g markdownlint-cli
-script:
-- markdownlint *.md
+notifications:
+  email:
+    - schietzsch@gmail.com
