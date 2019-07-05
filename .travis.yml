@@ -8,3 +8,11 @@ jobs:
     - stage: test
       script:
         - find . -name "*.sh" -type f -exec bash -c 'shopt -s globstar; shellcheck -x {}' \;
+
+language: node_js
+node_js:
+- '6'
+install:
+- npm install -g markdownlint-cli
+script:
+- markdownlint *.md
