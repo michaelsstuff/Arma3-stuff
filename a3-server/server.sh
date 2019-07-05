@@ -73,8 +73,8 @@ sed -i "/\/\/password     =/c\password     = \"${SERVERPASS}\";" "$a3_dir"/serve
 sed -i "/password     =/c\password     = \"${SERVERPASS}\";" "$a3_dir"/server.cfg
 
 # add the Headlessclients to the server config
-ip_string=$(echo \{"\""$(echo ${HC[*]} | sed -e 's/\s\+/","/g')"\"};")
-sed -i "/headlessClients\[\]/c\headlessClients\[\] = "${ip_string}"" "$a3_dir"/server.cfg
+ip_string="$(echo \{"\"$(echo "${HC[*]}" | sed -e 's/\s\+/","/g')\"};")"
+sed -i "/headlessClients\[\]/c\headlessClients\[\] = ${ip_string}" "$a3_dir"/server.cfg
 
 # download arma3 server
 cd "$home" || exit

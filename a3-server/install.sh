@@ -11,12 +11,12 @@ if [ "$1" = "-s" ]; then
 fi
 
 if [ ! -f ${steam_home}secret.key ]; then
-  cryptkey=$(hexdump </dev/urandom -n 16 -e '4/4 "%08X" 1 "\n"')
-  echo "$cryptkey" >${steam_home}secret.key
+  CRYPTKEY=$(hexdump </dev/urandom -n 16 -e '4/4 "%08X" 1 "\n"')
+  echo "$CRYPTKEY" >${steam_home}secret.key
   chmod 600 ${steam_home}secret.key
   chown steam:steam ${steam_home}secret.key
 else
-  cryptkey=$(cat "$steam_home"secret.key)
+  CRYPTKEY=$(cat "$steam_home"secret.key)
 fi
 
 encrypt() {
@@ -120,7 +120,7 @@ if [[ $yn == "y" ]]; then
   if [[ -n $STEAMWSPASS ]]; then
     STEAMWSPASS_decrypted=$(decrypt "${STEAMWSPASS}")
   fi
-  read -rp "password (${STEAMWSPASS_decrypted}):" STEAMPASS_new
+  read -rp "password (${STEAMWSPASS_decrypted}):" STEAMWSPASS_new
   if [[ -n $STEAMWSPASS_new ]]; then
     STEAMWSPASS_new_crypted=$(encrypt "${STEAMWSPASS_new}")
     sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAMWSPASS_new_crypted}\"" "$steam_home"config.cfg
