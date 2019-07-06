@@ -4,7 +4,6 @@ matrix:
       script:
         - find . -name "*.sh" -type f -exec bash -c 'shopt -s globstar; shellcheck -x {}' \;
     - language: node_js
-          - build-tools-25.0.3
       node_js:
         - '12'
       install:
