@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2087
 #source "config.cfg"
 hcloud="/go/bin/hcloud"
 sshkeyfile="/root/.ssh/id_ecdsa"
