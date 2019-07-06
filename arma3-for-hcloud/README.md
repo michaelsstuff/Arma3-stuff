@@ -12,7 +12,7 @@
 
 ## Usage
 
-```bash
+```sh
 yum install git -y
 git clone https://github.com/michaelsstuff/Arma3-stuff.git
 cd Arma3-stuff/arma3-for-hcloud/
@@ -77,7 +77,7 @@ We need an encrypted password for this field. You can genereate it like this:
 
 ## Build and start like this
 
-```bash
+```sh
 docker build -t arma3-hetzner/deploy .
 docker run -it --env-file .env arma3-hetzner/deploy:latest
 ```
