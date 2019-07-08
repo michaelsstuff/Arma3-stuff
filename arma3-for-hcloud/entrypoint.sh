@@ -72,9 +72,9 @@ EOC
 elif [ "$MODMETHOD" = "ftp" ]; then
   ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i $sshkeyfile root@"$ip" <<EOC
 sed -i "/MODMETHOD=/c\MODMETHOD=ftp" "$cfg"
+sed -i "/MODURL=/c\MODURL=${MODURL}" "$cfg"
 sed -i "/FTP_USER=/c\FTP_USER=\"${FTP_USER}\"" "$cfg"
 sed -i "/FTP_PASS=/c\FTP_PASS=\"${FTP_PASS}\"" "$cfg"
-sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
 EOC
 
 else
@@ -128,15 +128,14 @@ sed -i "/MODMETHOD=/c\MODMETHOD=ftp" "$cfg"
 sed -i "/MODURL=/c\MODURL=${MODURL}" "$cfg"
 sed -i "/FTP_USER=/c\FTP_USER=\"${FTP_USER}\"" "$cfg"
 sed -i "/FTP_PASS=/c\FTP_PASS=\"${FTP_PASS}\"" "$cfg"
-sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
 EOC
 
       else
         ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" -i $sshkeyfile root@"$ip" <<EOC
 sed -i "/MODMETHOD=/c\MODMETHOD=false" "$cfg"
 EOC
-      fi
 
+      fi
     done
   fi
 fi
