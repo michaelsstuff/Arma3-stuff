@@ -64,13 +64,15 @@ else
   STEAMPASS_decrypted=$(decrypt "${STEAMPASS}")
 fi
 
+SERVERPASS_decrypted=$(decrypt SERVERPASS)
+
 # check if config file exists
 if [ ! -f "$a3_dir"/server.cfg ]; then
   printf "Did not find a server.cfg in %s. I will download a default one. \n" "$a3_dir"
   curl -sL https://raw.githubusercontent.com/michaelsstuff/Arma3-stuff/master/a3-server/server.cfg -o "$a3_dir"/server.cfg
 fi
-sed -i "/\/\/password     =/c\password     = \"${SERVERPASS}\";" "$a3_dir"/server.cfg
-sed -i "/password     =/c\password     = \"${SERVERPASS}\";" "$a3_dir"/server.cfg
+sed -i "/\/\/password     =/c\password     = \"${SERVERPASS_decrypted}\";" "$a3_dir"/server.cfg
+sed -i "/password     =/c\password     = \"${SERVERPASS_decrypted}\";" "$a3_dir"/server.cfg
 
 # add the Headlessclients to the server config
 ip_string="$(echo \{"\"$(echo "${HC[*]}" | sed -e 's/\s\+/","/g')\"};")"
@@ -164,7 +166,6 @@ fi
 # starting the server
 cd "$a3_dir" || exit
 if [ "$ISHC" == "true" ]; then
-  SERVERPASS_decrypted=$(decrypt SERVERPASS)
   ./arma3server -connect="$SERVER" -port=2302 -password="$SERVERPASS_decrypted" -cfg=basic.cfg -client -loadMissionToMemory -hugepages -bandwidthAlg=2 -mod=\""$mods"\"
 else
   ./arma3server -name="$SERVERNAME" -config=server.cfg -cfg=basic.cfg -loadMissionToMemory -hugepages -bandwidthAlg=2 -mod=\""$mods"\"
