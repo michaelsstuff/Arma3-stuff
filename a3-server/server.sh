@@ -64,7 +64,7 @@ else
   STEAMPASS_decrypted=$(decrypt "${STEAMPASS}")
 fi
 
-SERVERPASS_decrypted=$(decrypt SERVERPASS)
+SERVERPASS_decrypted=$(decrypt "${SERVERPASS}")
 
 # check if config file exists
 if [ ! -f "$a3_dir"/server.cfg ]; then
