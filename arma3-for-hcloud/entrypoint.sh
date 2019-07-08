@@ -174,6 +174,6 @@ if [ "$give_auth_notice" = "true" ]; then
 else
   ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i "$sshkeyfile" root@"$server_ip" "systemctl start arma3-server"
   for ipadr in "${hc_ip[@]}"; do
-    echo ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i "$sshkeyfile" root@"$ipadr" "systemctl start arma3-server"
+    ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i "$sshkeyfile" root@"$ipadr" "systemctl start arma3-server"
   done
 fi
