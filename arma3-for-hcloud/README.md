@@ -44,7 +44,7 @@ Log into  console.hetzner.cloud, go to your Project -> Access -> API TOKENS
 
 Create a cryptokey to store the passwords:
 
-`CRYPTKEY=$(< /dev/urandom hexdump -n 16 -e '4/4 "%08X" 1 "\n"')`
+`CRYPTKEY=$(< /dev/random hexdump -n 16 -e '4/4 "%08X" 1 "\n"')`
 
 And save it to the  .env file:
 
