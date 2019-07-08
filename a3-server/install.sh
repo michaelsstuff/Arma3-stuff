@@ -11,7 +11,7 @@ if [ "$1" = "-s" ]; then
 fi
 
 if [ ! -f ${steam_home}secret.key ]; then
-  CRYPTKEY=$(hexdump </dev/random -n 16 -e '4/4 "%08X" 1 "\n"')
+  CRYPTKEY=$(hexdump </dev/urandom -n 16 -e '4/4 "%08X" 1 "\n"')
   echo "$CRYPTKEY" >${steam_home}secret.key
   chmod 600 ${steam_home}secret.key
   chown steam:steam ${steam_home}secret.key

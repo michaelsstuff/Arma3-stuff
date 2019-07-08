@@ -21,7 +21,7 @@ if [[ ${hcloudsskkeys[*]} != *"$keyprint"* ]]; then
 fi
 
 if [ -z "$CRYPTKEY" ]; then
-  CRYPTKEY=$(hexdump </dev/random -n 16 -e '4/4 "%08X" 1 "\n"')
+  CRYPTKEY=$(hexdump </dev/urandom -n 16 -e '4/4 "%08X" 1 "\n"')
 fi
 
 encrypt() {
