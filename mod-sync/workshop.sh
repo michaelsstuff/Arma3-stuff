@@ -42,9 +42,9 @@ for workshop_item in "${WS_IDS[@]}"; do
     printf "Downloading %s \n" "$modname_clean"
     until steamcmd +login "${STEAMUSER}" "${STEAMPASS_decrypted}" +workshop_download_item 107410 "${workshop_item}" validate +quit; do
         printf "Error Downloading %s. Will try again \n" "$modname_clean"
-        counter++
+        ((counter++))
         if ((counter > 4)); then
-            break
+            exit 1
         fi
     done
     if [ ! -L "${home}/mods/@${modname_clean}" ]; then
