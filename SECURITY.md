@@ -4,9 +4,9 @@
 
 Contact: schietzsch@googlemail.com
 
-Encryption: https://keybase.io/michaelsstuff
+Encryption: <https://keybase.io/michaelsstuff>
 
-```
+```gpg
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
