@@ -4,7 +4,9 @@
 
 Contact: schietzsch@googlemail.com
 
-Encryption: <https://keybase.io/michaelsstuff>
+Encryption: 
+* <https://keybase.io/michaelsstuff>
+* <https://pgp.mit.edu/pks/lookup?op=get&search=0x5EFB16C2D11BAA8D>
 
 ```gpg
 -----BEGIN PGP PUBLIC KEY BLOCK-----
