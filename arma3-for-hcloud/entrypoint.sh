@@ -58,6 +58,8 @@ while true; do
   sleep 1
 done
 
+ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" ip addr add "$floating_ip" dev eth0
+
 cfg="/home/steam/config.cfg"
 ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<EOC
 yum install git -y
@@ -68,7 +70,6 @@ echo "$CRYPTKEY" > /home/steam/secret.key
 sed -i "/STEAMUSER=/c\STEAMUSER=\"${STEAM_USER_SRV}\"" "$cfg"
 sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAM_PASW_SRV}\"" "$cfg"
 sed -i "/SERVERPASS=/c\SERVERPASS=\"${SERVERPASS}\"" "$cfg"
-ip addr add "$ip" dev eth0
 EOC
 
 if [ "$MODMETHOD" = "ws" ]; then
