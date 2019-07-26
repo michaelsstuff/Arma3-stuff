@@ -43,6 +43,15 @@ test_ssh() {
 $hcloud server create --image centos-7 --name arma3server --type ccx21 --ssh-key "$SSHNAME"
 ip="$($hcloud server list -o noheader | grep arma3server | awk '{print $4}')"
 server_ip=$ip
+
+floating_ip=$(hcloud floating-ip list | grep a3server | awk '{print $4}')
+if [[ $floating_ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+  hcloud floating-ip assign $(hcloud floating-ip list | grep a3server | awk '{print $1}') arma3server
+else
+  hcloud floating-ip create --type ipv4 --server arma3server --description a3server
+  floating_ip=$(hcloud floating-ip list | grep a3server | awk '{print $4}')
+fi
+
 sleep 10
 while true; do
   test_ssh "$ip" && break
@@ -59,6 +68,7 @@ echo "$CRYPTKEY" > /home/steam/secret.key
 sed -i "/STEAMUSER=/c\STEAMUSER=\"${STEAM_USER_SRV}\"" "$cfg"
 sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAM_PASW_SRV}\"" "$cfg"
 sed -i "/SERVERPASS=/c\SERVERPASS=\"${SERVERPASS}\"" "$cfg"
+ip addr add "$ip" dev eth0
 EOC
 
 if [ "$MODMETHOD" = "ws" ]; then
@@ -149,9 +159,9 @@ EOC
 delete=(127.0.0.1)
 # shellcheck disable=SC2128
 hc_ip=("${hc_ip[@]/$delete/}")
-for i in "${!hc_ip[@]}"; do 
-  [ -n "${hc_ip[$i]}" ] || unset "hc_ip[$i]" 
-done 
+for i in "${!hc_ip[@]}"; do
+  [ -n "${hc_ip[$i]}" ] || unset "hc_ip[$i]"
+done
 
 if [ "$give_auth_notice" = "true" ]; then
   STEAM_WS_PASW_SRV_DECRYPTED=$(decrypt "${STEAM_WS_PASW_SRV}")
@@ -177,3 +187,9 @@ else
     ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i "$sshkeyfile" root@"$ipadr" "systemctl start arma3-server"
   done
 fi
+
+printf "\n"
+printf "Your ArmA 3 Server IP for your players to connecto to is: \n"
+printf "\n"
+printf "%s \n" "$floating_ip"
+printf "\n"
