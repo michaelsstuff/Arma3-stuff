@@ -58,7 +58,19 @@ while true; do
   sleep 1
 done
 
-ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" ip addr add "$floating_ip" dev eth0
+if [ "$MODMETHOD" = "ftp" ]; then
+  # add volume creation / grabbing
+  volID_arma3server-mods=$(hcloud volume list | grep arma3server-mods | awk '{print $1}')
+
+  re='^[0-9]+$'
+  if [[ "$volID_arma3server-mods" =~ $re ]]; then
+    printf "Found an existing volume for the server\n"
+    hcloud volume attach --automount --server arma3server 2992542
+  else
+    printf "Creating mod volume for the server\n"
+    hcloud volume create --server arma3server --automount --name arma3server-mods --format ext4 --size 50
+  fi
+fi
 
 cfg="/home/steam/config.cfg"
 ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<EOC
@@ -70,6 +82,7 @@ echo "$CRYPTKEY" > /home/steam/secret.key
 sed -i "/STEAMUSER=/c\STEAMUSER=\"${STEAM_USER_SRV}\"" "$cfg"
 sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAM_PASW_SRV}\"" "$cfg"
 sed -i "/SERVERPASS=/c\SERVERPASS=\"${SERVERPASS}\"" "$cfg"
+ip addr add "$floating_ip" dev eth0
 EOC
 
 if [ "$MODMETHOD" = "ws" ]; then
@@ -81,6 +94,15 @@ sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
 EOC
 
 elif [ "$MODMETHOD" = "ftp" ]; then
+  # create symlink for mounted volume
+  ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<'EOC'
+vpath=$(grep sdb /proc/mounts | awk '{print $2}')
+ln -s "$vpath" /home/steam/arma3server/mods
+chown steam:steam /home/steam/arma3server/mods
+chown -R steam:steam "$vpath"
+
+EOC
+
   ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<EOC
 sed -i "/MODMETHOD=/c\MODMETHOD=ftp" "$cfg"
 sed -i "/MODURL=/c\MODURL=${MODURL}" "$cfg"
@@ -134,6 +156,14 @@ EOC
         give_auth_notice=true
 
       elif [ "$MODMETHOD" = "ftp" ]; then
+        #mount volume
+        ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<'EOC'
+vpath=$(grep sdb /proc/mounts | awk '{print $2}')
+ln -s "$vpath" /home/steam/arma3server/mods
+chown -R steam:steam "$vpath"
+
+EOC
+
         ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<EOC
 sed -i "/MODMETHOD=/c\MODMETHOD=ftp" "$cfg"
 sed -i "/MODURL=/c\MODURL=${MODURL}" "$cfg"
