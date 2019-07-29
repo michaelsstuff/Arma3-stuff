@@ -83,7 +83,7 @@ if [ "$MODMETHOD" = "ftp" ]; then
   re='^[0-9]+$'
   if [[ "$volID_arma3server_mods" =~ $re ]]; then
     printf "Found an existing volume for the server\n"
-    hcloud volume attach --automount --server arma3server 2992542
+    hcloud volume attach --automount --server arma3server "$volID_arma3server_mods"
   else
     printf "Creating mod volume for the server\n"
     hcloud volume create --server arma3server --automount --name arma3server-mods --format ext4 --size 50
