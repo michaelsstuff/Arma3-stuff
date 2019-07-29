@@ -61,7 +61,6 @@ done
 if [ "$MODMETHOD" = "ftp" ]; then
   # add volume creation / grabbing
   volID_arma3server-mods=$(hcloud volume list | grep arma3server-mods | awk '{print $1}')
-
   re='^[0-9]+$'
   if [[ "$volID_arma3server-mods" =~ $re ]]; then
     printf "Found an existing volume for the server\n"
@@ -85,15 +84,7 @@ sed -i "/SERVERPASS=/c\SERVERPASS=\"${SERVERPASS}\"" "$cfg"
 ip addr add "$floating_ip" dev eth0
 EOC
 
-if [ "$MODMETHOD" = "ws" ]; then
-  ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<EOC
-sed -i "/MODMETHOD=/c\MODMETHOD=ws" "$cfg"
-sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAM_WS_USER_SRV}\"" "$cfg"
-sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAM_WS_PASW_SRV}\"" "$cfg"
-sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
-EOC
-
-elif [ "$MODMETHOD" = "ftp" ]; then
+if [ "$MODMETHOD" = "ftp" ]; then
   # create symlink for mounted volume
   ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<'EOC'
 vpath=$(grep sdb /proc/mounts | awk '{print $2}')
@@ -146,16 +137,7 @@ sed -i "/SERVER=/c\SERVER=\"${server_ip}\"" "$cfg"
 
 EOC
 
-      if [ "$MODMETHOD" = "ws" ]; then
-        ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<EOC
-sed -i "/MODMETHOD=/c\MODMETHOD=ws" "$cfg"
-sed -i "/STEAMWSUSER=/c\STEAMWSUSER=\"${STEAM_WS_USER_SRV}\"" "$cfg"
-sed -i "/STEAMWSPASS=/c\STEAMWSPASS=\"${STEAM_WS_PASW_SRV}\"" "$cfg"
-sed -i "/WS_IDS=/c\WS_IDS=(${WS_IDS[*]})" "$cfg"
-EOC
-        give_auth_notice=true
-
-      elif [ "$MODMETHOD" = "ftp" ]; then
+      if [ "$MODMETHOD" = "ftp" ]; then
         #mount volume
         ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<'EOC'
 vpath=$(grep sdb /proc/mounts | awk '{print $2}')
@@ -194,30 +176,10 @@ for i in "${!hc_ip[@]}"; do
   [ -n "${hc_ip[$i]}" ] || unset "hc_ip[$i]"
 done
 
-if [ "$give_auth_notice" = "true" ]; then
-  STEAM_WS_PASW_SRV_DECRYPTED=$(decrypt "${STEAM_WS_PASW_SRV}")
-  printf "please log into the arma3server and authentificate once with the steam workshop user \n"
-  printf "\n"
-  printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile=/dev/null\" -i %s root@%s \"sudo -u steam /home/steam/steamcmd.sh +login %s %s +quit\" \n" "$sshkeyfile" "$server_ip" "${STEAM_WS_USER_SRV}" "${STEAM_WS_PASW_SRV_DECRYPTED}"
-  printf "\n"
-  printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile=/dev/null\" -i %s root@%s \"systemctl start arma3-server\" \n" "$sshkeyfile" "$server_ip"
-  printf "\n"
-  printf "Do the same for the Headless clients: \n"
-  printf "\n"
-  for ipadr in "${hc_ip[@]}"; do
-    printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile=/dev/null\" -i %s root@%s \"sudo -u steam /home/steam/steamcmd.sh +login %s %s +quit\" \n" "$sshkeyfile" "$ipadr" "${STEAM_WS_USER_SRV}" "${STEAM_WS_PASW_SRV_DECRYPTED}"
-    printf "ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o \"UserKnownHostsFile=/dev/null\" -i %s root@%s \"systemctl start arma3-server\" \n" "$sshkeyfile" "$ipadr"
-    printf "\n"
-  done
-  printf "\n"
-  printf "\n"
-  /bin/bash
-else
-  ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i "$sshkeyfile" root@"$server_ip" "systemctl start arma3-server"
-  for ipadr in "${hc_ip[@]}"; do
-    ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i "$sshkeyfile" root@"$ipadr" "systemctl start arma3-server"
-  done
-fi
+ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i "$sshkeyfile" root@"$server_ip" "systemctl start arma3-server"
+for ipadr in "${hc_ip[@]}"; do
+  ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i "$sshkeyfile" root@"$ipadr" "systemctl start arma3-server"
+done
 
 printf "\n"
 printf "Your ArmA 3 Server IP for your players to connecto to is: \n"
