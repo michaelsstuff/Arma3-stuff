@@ -48,7 +48,7 @@ test_ssh() {
   ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -i "$sshkeyfile" -q root@"$1" exit
 }
 
-if [ "$1" = "remove"]; then
+if [ "$1" = "remove" ]; then
   $hcloud server delete arma3server
   if [ "$HC_COUNT" -gt "0" ]; then
     declare -a hc_ip
