@@ -79,9 +79,9 @@ done
 
 if [ "$MODMETHOD" = "ftp" ]; then
   # add volume creation / grabbing
-  volID_arma3server-mods=$(hcloud volume list | grep arma3server-mods | awk '{print $1}')
+  volID_arma3server_mods=$(hcloud volume list | grep arma3server-mods | awk '{print $1}')
   re='^[0-9]+$'
-  if [[ "$volID_arma3server-mods" =~ $re ]]; then
+  if [[ "$volID_arma3server_mods" =~ $re ]]; then
     printf "Found an existing volume for the server\n"
     hcloud volume attach --automount --server arma3server 2992542
   else
