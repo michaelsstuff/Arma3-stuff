@@ -145,11 +145,11 @@ if [ -n "$HC_COUNT" ]; then
 
       if [ "$MODMETHOD" = "ftp" ]; then
         # add volume creation / grabbing
-        volID_arma3hc"$i"-mods=$(hcloud volume list | grep arma3hc"$i"-mods | awk '{print $1}')
+        volID_arma3hc_mods=$(hcloud volume list | grep arma3hc"$i"-mods | awk '{print $1}')
         re='^[0-9]+$'
-        if [[ "${volID_arma3hc}${i}-mods" =~ $re ]]; then
+        if [[ "$volID_arma3hc_mods" =~ $re ]]; then
           printf "Found an existing volume for the server\n"
-          hcloud volume attach --automount --server arma3hc"$i" 2992542
+          hcloud volume attach --automount --server arma3hc"$i" "$volID_arma3hc_mods"
         else
           printf "Creating mod volume for the server\n"
           hcloud volume create --server arma3hc"$i" --automount --name arma3hc"$i"-mods --format ext4 --size 50
