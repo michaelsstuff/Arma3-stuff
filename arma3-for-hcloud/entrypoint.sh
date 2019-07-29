@@ -142,6 +142,20 @@ if [ -n "$HC_COUNT" ]; then
         test_ssh "$ip" && break
         sleep 1
       done
+
+      if [ "$MODMETHOD" = "ftp" ]; then
+        # add volume creation / grabbing
+        volID_arma3hc"$i"-mods=$(hcloud volume list | grep arma3hc"$i"-mods | awk '{print $1}')
+        re='^[0-9]+$'
+        if [[ "${volID_arma3hc}${i}-mods" =~ $re ]]; then
+          printf "Found an existing volume for the server\n"
+          hcloud volume attach --automount --server arma3hc"$i" 2992542
+        else
+          printf "Creating mod volume for the server\n"
+          hcloud volume create --server arma3hc"$i" --automount --name arma3hc"$i"-mods --format ext4 --size 50
+        fi
+      fi
+
       ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<EOC
 yum install git -y
 git clone https://github.com/michaelsstuff/Arma3-stuff.git
