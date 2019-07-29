@@ -7,4 +7,4 @@ RUN go get -u github.com/hetznercloud/cli/cmd/hcloud
 WORKDIR /root
 COPY id_ecdsa id_ecdsa.pub /root/.ssh/
 COPY entrypoint.sh /root/
-CMD ["/root/entrypoint.sh"]
+ENTRYPOINT [ "/root/entrypoint.sh" ]

@@ -1,6 +1,14 @@
 #!/bin/bash
 # shellcheck disable=SC2087
 #source "config.cfg"
+if [ -z "$1" ]; then
+  printf "Please specify what to do \n"
+  printf "\"deploy\" to deploy servers \n"
+  printf "\"remove\" to remove servers \n"
+  printf "Warning; \"remove\" will not delete your volumes or floating IPs \n"
+  exit 1
+fi
+
 hcloud="/go/bin/hcloud"
 sshkeyfile="/root/.ssh/id_ecdsa"
 if [ ! -f "$sshkeyfile" ]; then
@@ -39,6 +47,17 @@ decrypt() {
 test_ssh() {
   ssh -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -i "$sshkeyfile" -q root@"$1" exit
 }
+
+if [ "$1" = "remove"]; then
+  $hcloud server delete arma3server
+  if [ "$HC_COUNT" -gt "0" ]; then
+    declare -a hc_ip
+    for i in $(seq 1 "$HC_COUNT"); do
+      $hcloud server delete arma3hc"$i"
+    done
+  fi
+  exit
+fi
 
 $hcloud server create --image centos-7 --name arma3server --type ccx21 --ssh-key "$SSHNAME"
 ip="$($hcloud server list -o noheader | grep arma3server | awk '{print $4}')"
