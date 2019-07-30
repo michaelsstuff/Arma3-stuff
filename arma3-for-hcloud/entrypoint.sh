@@ -65,7 +65,7 @@ server_ip=$ip
 
 floating_ip=$(hcloud floating-ip list | grep a3server | awk '{print $4}')
 if [[ $floating_ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-  hcloud floating-ip assign $(hcloud floating-ip list | grep a3server | awk '{print $1}') arma3server
+  hcloud floating-ip assign "$(hcloud floating-ip list | grep a3server | awk '{print $1}')" arma3server
 else
   hcloud floating-ip create --type ipv4 --server arma3server --description a3server
   floating_ip=$(hcloud floating-ip list | grep a3server | awk '{print $4}')
