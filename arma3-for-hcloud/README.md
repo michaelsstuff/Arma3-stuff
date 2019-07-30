@@ -79,5 +79,11 @@ We need an encrypted password for this field. You can genereate it like this:
 
 ```sh
 docker build -t arma3-hetzner/deploy .
-docker run -it --env-file .env arma3-hetzner/deploy:latest
+docker run -it --env-file .env arma3-hetzner/deploy:latest deploy
+```
+
+## To remove the servers, but not the volumes and IP
+
+```sh
+docker run -it --env-file .env arma3-hetzner/deploy:latest remove
 ```
