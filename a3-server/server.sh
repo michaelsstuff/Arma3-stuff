@@ -105,40 +105,15 @@ if [ ! -d "$a3_dir"/mods ]; then
 fi
 
 if [[ $MODMETHOD == "ftp" ]]; then
+moddir="${a3_dir}/mods/"
   if [[ -n "${FTP_USER}" ]]; then
     ftp_pw=$(decrypt "${FTP_PASS}")
-    wget --ftp-user "${FTP_USER}" --ftp-password "${ftp_pw}" -m -c --restrict-file-names=lowercase -P "$a3_dir"/mods/ -nH "${MODURL}"
+    lftp -e "mirror --parallel=10 --ignore-time -v / ${moddir}" -u "${FTP_USER}","${ftp_pw}" "${MODURL}"
   else
-    wget -m -c --restrict-file-names=lowercase -P "$a3_dir"/mods/ -nH "${MODURL}"
+    lftp -e "mirror --parallel=10 --ignore-time -v / ${moddir}" "${MODURL}"
   fi
 elif [[ $MODMETHOD == "direct" ]]; then
   /bin/bash "${home}"/update-mods.sh
-elif [[ $MODMETHOD == "ws" ]]; then
-  if [[ -z $WS_IDS ]]; then
-    printf "Workshop mod IDs not configured, please set WS_IDS in the config.cfg\n"
-    exit 1
-  elif [ -z "${STEAMWSUSER}" ]; then
-    printf "STEAMWSUSER is not set, please configure in config.cfg"
-    exit 1
-  elif [ -z "${STEAMWSPASS}" ]; then
-    printf "STEAMWSPASS is not set, please configure in config.cfg"
-    exit 1
-  else
-    a3_id=107410
-    STEAMWSPASS_decrypted=$(decrypt "${STEAMWSPASS}")
-    for i in ${WS_IDS[*]}; do
-      ./steamcmd.sh +login "${STEAMWSUSER}" "${STEAMWSPASS_decrypted}" +workshop_download_item "${a3_id}" "$i" +quit
-      modname="$(curl -s https://steamcommunity.com/sharedfiles/filedetails/?id="${i}" | grep "<title>" | sed -e 's/<[^>]*>//g' | cut -d ' ' -f 4-)" # still need to rework, so it grabs the full name!
-      printf "\n"
-      modname_clean=$(echo "$modname" | dos2unix)
-      ln -s "${home}/Steam/steamapps/workshop/content/${a3_id}/${i}" "${a3_dir}/mods/@${modname_clean}"
-      cd "${a3_dir}/mods/@${modname_clean}" || exit
-      for f in $(find ./ -type f | grep "[A-Z]"); do
-        mv -i "$f" "$(echo "$f" | tr "[:upper:]" "[:lower:]")"
-      done
-      cd "$home" || exit
-    done
-  fi
 fi
 
 # create modlist

@@ -2,7 +2,7 @@
 steam_home="/home/steam/"
 a3_dir="$steam_home"arma3server
 yum install epel-release -y
-yum install -y glibc libstdc++ glibc.i686 libstdc++.i686 jq unzip dos2unix openssl wget
+yum install -y glibc libstdc++ glibc.i686 libstdc++.i686 jq unzip dos2unix openssl lftp
 id -u steam &>/dev/null || useradd -m steam
 cp server.sh update-mods.sh "$steam_home"
 

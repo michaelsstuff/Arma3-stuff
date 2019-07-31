@@ -32,6 +32,12 @@ if [ -z "$CRYPTKEY" ]; then
   CRYPTKEY=$(hexdump </dev/urandom -n 16 -e '4/4 "%08X" 1 "\n"')
 fi
 
+if [ -z "$DC" ]; then
+  dc_local="nbg1"
+else
+  dc_local="$DC"
+fi
+
 encrypt() {
   local encrypt
   encrypt="$(echo "${1}" | openssl enc -a -e -aes-256-cbc -md md5 -pass pass:"${CRYPTKEY}" 2>/dev/null)"
@@ -59,7 +65,7 @@ if [ "$1" = "remove" ]; then
   exit
 fi
 
-$hcloud server create --image centos-7 --name arma3server --type ccx21 --ssh-key "$SSHNAME"
+$hcloud server create --image centos-7 --name arma3server --type ccx21 --ssh-key "$SSHNAME" --location "$dc_local"
 ip="$($hcloud server list -o noheader | grep arma3server | awk '{print $4}')"
 server_ip=$ip
 
@@ -86,7 +92,9 @@ if [ "$MODMETHOD" = "ftp" ]; then
     hcloud volume attach --automount --server arma3server "$volID_arma3server_mods"
   else
     printf "Creating mod volume for the server\n"
-    hcloud volume create --server arma3server --automount --name arma3server-mods --format ext4 --size 50
+    hcloud volume create --server arma3server --name arma3server-mods --size 50
+    ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "echo mkfs.xfs -n version=ci /dev/sdb -f"
+    ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkdir /mnt/mods; mount /dev/sdb/ /mnt/mods"
   fi
 fi
 
@@ -106,10 +114,9 @@ EOC
 if [ "$MODMETHOD" = "ftp" ]; then
   # create symlink for mounted volume
   ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<'EOC'
-vpath=$(grep sdb /proc/mounts | awk '{print $2}')
-ln -s "$vpath" /home/steam/arma3server/mods
+ln -s /mnt/mods /home/steam/arma3server/mods
 chown steam:steam /home/steam/arma3server/mods
-chown -R steam:steam "$vpath"
+chown -R steam:steam /mnt/mods
 
 EOC
 
@@ -132,7 +139,7 @@ if [ -n "$HC_COUNT" ]; then
   if [ "$HC_COUNT" -gt "0" ]; then
     declare -a hc_ip
     for i in $(seq 1 "$HC_COUNT"); do
-      $hcloud server create --image centos-7 --name arma3hc"$i" --type cx21 --ssh-key "$SSHNAME"
+      $hcloud server create --image centos-7 --name arma3hc"$i" --type cx21 --ssh-key "$SSHNAME" --location "$dc_local"
       ip="$($hcloud server list -o noheader | grep arma3hc"$i" | awk '{print $4}')"
       hc_ip+=("$ip")
       steamuser=$(eval echo "$""STEAM_USER_HC""$i")
@@ -152,7 +159,9 @@ if [ -n "$HC_COUNT" ]; then
           hcloud volume attach --automount --server arma3hc"$i" "$volID_arma3hc_mods"
         else
           printf "Creating mod volume for the server\n"
-          hcloud volume create --server arma3hc"$i" --automount --name arma3hc"$i"-mods --format ext4 --size 50
+          hcloud volume create --server arma3hc"$i" --name arma3hc"$i"-mods --size 50
+          ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "echo mkfs.xfs -n version=ci /dev/sdb -f"
+          ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkdir /mnt/mods; mount /dev/sdb/ /mnt/mods"
         fi
       fi
 
@@ -171,11 +180,10 @@ sed -i "/SERVER=/c\SERVER=\"${server_ip}\"" "$cfg"
 EOC
 
       if [ "$MODMETHOD" = "ftp" ]; then
-        #mount volume
+        #link volume
         ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<'EOC'
-vpath=$(grep sdb /proc/mounts | awk '{print $2}')
-ln -s "$vpath" /home/steam/arma3server/mods
-chown -R steam:steam "$vpath"
+ln -s /mnt/mods /home/steam/arma3server/mods
+chown -R steam:steam /mnt/mods
 
 EOC
 
