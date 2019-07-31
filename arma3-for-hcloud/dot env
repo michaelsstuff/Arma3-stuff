@@ -1,32 +1,35 @@
-HCLOUD_TOKEN=""
-CRYPTKEY=""
-SSHNAME="a3stuff"
+HCLOUD_TOKEN=
+CRYPTKEY=
+SSHNAME=a3stuff
+# hetzner Datacenter selection. Nuremberg = nbg1; Helsinki = hel1; Falkenstein = fsn1
+# !! Do not change this, if you already have Volumes. Delete the volumes first, if you want to change DC location
+DC=nbg1
 
 # STEAM_USER_SRV -> the account that will run the server itself
-STEAM_USER_SRV=""
-STEAM_PASW_SRV=""
+STEAM_USER_SRV=
+STEAM_PASW_SRV=
 
 # mod method (false -> no mods, "ftp" -> via ftp mirror, aka amra3sync, "ws" -> Steam Workshop)
 MODMETHOD=false
 
 # mods via FTP settings:
-# MODURL="ftp://"
-# FTP_USER=""
-# FTP_PASS=""
+# MODURL=ftp://
+# FTP_USER=
+# FTP_PASS=
 
 # mods via Steam Workshop settings:
-# STEAM_WS_USER_SRV=""
-# STEAM_WS_PASW_SRV=""
+# STEAM_WS_USER_SRV=
+# STEAM_WS_PASW_SRV=
 # WS_IDS=(450814997 463939057 708250744 751965892 843425103 843593391 843632231 843577117 773125288 773131200 884966711 699630614 1112431110)
 
 # headless clients settings. 
 HC_COUNT=3
-STEAM_USER_HC1=""
-STEAM_PASW_HC1=""
-STEAM_USER_HC2=""
-STEAM_PASW_HC2=""
-STEAM_USER_HC3=""
-STEAM_PASW_HC3=""
+STEAM_USER_HC1=
+STEAM_PASW_HC1=
+STEAM_USER_HC2=
+STEAM_PASW_HC2=
+STEAM_USER_HC3=
+STEAM_PASW_HC3=
 
 # generic config for Arma 3 server -> do not encrypt this, as arma will wirte it clear text anyway
-SERVERPASS="changeme"
+SERVERPASS=changeme
