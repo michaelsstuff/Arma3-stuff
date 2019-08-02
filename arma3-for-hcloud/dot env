@@ -30,3 +30,6 @@ STEAM_PASW_HC3=""
 
 # generic config for Arma 3 server -> do not encrypt this, as arma will wirte it clear text anyway
 SERVERPASS="changeme"
+
+# testing - give a url to a mission.pbo 
+MISSIONURL=

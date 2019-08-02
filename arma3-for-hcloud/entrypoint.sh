@@ -133,6 +133,29 @@ sed -i "/MODMETHOD=/c\MODMETHOD=false" "$cfg"
 EOC
 fi
 
+misisonfile=$(echo ${MISSIONURL}| awk -F '/' '{print $5}')
+misisonname=${misisonfile%.*}
+
+ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<EOC
+curl -s ${MISSIONURL} -o /home/steam/arma3server/mpmissions/${misisonfile}
+cat <<EOF >>
+
+// MISSIONS CYCLE
+class Missions
+{
+	class Mission1
+	{
+		template = "${misisonname}";
+		difficulty = "Regular";
+	};
+};
+
+EOF
+chown -R steam:steam /home/steam/arma3server/mpmissions/
+
+EOC
+
+
 printf "\n"
 
 if [ -n "$HC_COUNT" ]; then
