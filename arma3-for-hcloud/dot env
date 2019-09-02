@@ -1,6 +1,8 @@
 HCLOUD_TOKEN=""
 CRYPTKEY=""
 SSHNAME="a3stuff"
+SERVERTYPE=cx41
+HCTYPE=cx21
 
 # STEAM_USER_SRV -> the account that will run the server itself
 STEAM_USER_SRV=""

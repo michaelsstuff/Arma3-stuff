@@ -32,6 +32,10 @@ if [ -z "$CRYPTKEY" ]; then
   CRYPTKEY=$(hexdump </dev/urandom -n 16 -e '4/4 "%08X" 1 "\n"')
 fi
 
+if [ -z "$CRYPTKEY" ]; then
+  CRYPTKEY=$(hexdump </dev/urandom -n 16 -e '4/4 "%08X" 1 "\n"')
+fi
+
 if [ -z "$DC" ]; then
   dc_local="nbg1"
 else
@@ -65,7 +69,7 @@ if [ "$1" = "remove" ]; then
   exit
 fi
 
-$hcloud server create --image centos-7 --name arma3server --type ccx21 --ssh-key "$SSHNAME" --location "$dc_local"
+$hcloud server create --image centos-7 --name arma3server --type "$SERVERTYPE" --ssh-key "$SSHNAME" --location "$dc_local"
 ip="$($hcloud server list -o noheader | grep arma3server | awk '{print $4}')"
 server_ip=$ip
 
@@ -162,7 +166,7 @@ if [ -n "$HC_COUNT" ]; then
   if [ "$HC_COUNT" -gt "0" ]; then
     declare -a hc_ip
     for i in $(seq 1 "$HC_COUNT"); do
-      $hcloud server create --image centos-7 --name arma3hc"$i" --type cx21 --ssh-key "$SSHNAME" --location "$dc_local"
+      $hcloud server create --image centos-7 --name arma3hc"$i" --type "$HCTYPE" --ssh-key "$SSHNAME" --location "$dc_local"
       ip="$($hcloud server list -o noheader | grep arma3hc"$i" | awk '{print $4}')"
       hc_ip+=("$ip")
       steamuser=$(eval echo "$""STEAM_USER_HC""$i")
