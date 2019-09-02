@@ -96,7 +96,7 @@ if [ "$MODMETHOD" = "ftp" ]; then
     hcloud volume attach --automount --server arma3server "$volID_arma3server_mods"
   else
     printf "Creating mod volume for the server\n"
-    hcloud volume create --server arma3server --name arma3server-mods --size 50
+    hcloud volume create --server arma3server --name arma3server-mods --size "$MODSIZE"
     ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "echo mkfs.xfs -n version=ci /dev/sdb -f"
     ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkdir /mnt/mods; mount /dev/sdb/ /mnt/mods"
   fi
@@ -186,7 +186,7 @@ if [ -n "$HC_COUNT" ]; then
           hcloud volume attach --automount --server arma3hc"$i" "$volID_arma3hc_mods"
         else
           printf "Creating mod volume for the server\n"
-          hcloud volume create --server arma3hc"$i" --name arma3hc"$i"-mods --size 50
+          hcloud volume create --server arma3hc"$i" --name arma3hc"$i"-mods --size "$MODSIZE"
           ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "echo mkfs.xfs -n version=ci /dev/sdb -f"
           ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkdir /mnt/mods; mount /dev/sdb/ /mnt/mods"
         fi
