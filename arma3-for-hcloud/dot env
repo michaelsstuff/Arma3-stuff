@@ -4,6 +4,9 @@ SSHNAME=a3stuff
 # hetzner Datacenter selection. Nuremberg = nbg1; Helsinki = hel1; Falkenstein = fsn1
 # !! Do not change this, if you already have Volumes. Delete the volumes first, if you want to change DC location
 DC=nbg1
+SERVERTYPE=cx41
+HCTYPE=cx21
+MODSIZE=50
 
 # STEAM_USER_SRV -> the account that will run the server itself
 STEAM_USER_SRV=
@@ -32,4 +35,7 @@ STEAM_USER_HC3=
 STEAM_PASW_HC3=
 
 # generic config for Arma 3 server -> do not encrypt this, as arma will wirte it clear text anyway
-SERVERPASS=changeme
+SERVERPASS="changeme"
+
+# testing - give a url to a mission.pbo 
+MISSIONURL=

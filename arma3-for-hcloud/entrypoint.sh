@@ -31,6 +31,10 @@ if [ -z "$CRYPTKEY" ]; then
   CRYPTKEY=$(hexdump </dev/urandom -n 16 -e '4/4 "%08X" 1 "\n"')
 fi
 
+if [ -z "$CRYPTKEY" ]; then
+  CRYPTKEY=$(hexdump </dev/urandom -n 16 -e '4/4 "%08X" 1 "\n"')
+fi
+
 if [ -z "$DC" ]; then
   dc_local="nbg1"
 else
@@ -64,7 +68,7 @@ if [ "$1" = "remove" ]; then
   exit
 fi
 
-$hcloud server create --image centos-7 --name arma3server --type ccx21 --ssh-key "$SSHNAME" --location "$dc_local"
+$hcloud server create --image centos-7 --name arma3server --type "$SERVERTYPE" --ssh-key "$SSHNAME" --location "$dc_local"
 ip="$($hcloud server list -o noheader | grep arma3server | awk '{print $4}')"
 server_ip=$ip
 
@@ -124,13 +128,36 @@ sed -i "/MODMETHOD=/c\MODMETHOD=false" "$cfg"
 EOC
 fi
 
+misisonfile=$(echo ${MISSIONURL}| awk -F '/' '{print $5}')
+misisonname=${misisonfile%.*}
+
+ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" <<EOC
+curl -s ${MISSIONURL} -o /home/steam/arma3server/mpmissions/${misisonfile}
+cat <<EOF >>
+
+// MISSIONS CYCLE
+class Missions
+{
+	class Mission1
+	{
+		template = "${misisonname}";
+		difficulty = "Regular";
+	};
+};
+
+EOF
+chown -R steam:steam /home/steam/arma3server/mpmissions/
+
+EOC
+
+
 printf "\n"
 
 if [ -n "$HC_COUNT" ]; then
   if [ "$HC_COUNT" -gt "0" ]; then
     declare -a hc_ip
     for i in $(seq 1 "$HC_COUNT"); do
-      $hcloud server create --image centos-7 --name arma3hc"$i" --type cx21 --ssh-key "$SSHNAME" --location "$dc_local"
+      $hcloud server create --image centos-7 --name arma3hc"$i" --type "$HCTYPE" --ssh-key "$SSHNAME" --location "$dc_local"
       ip="$($hcloud server list -o noheader | grep arma3hc"$i" | awk '{print $4}')"
       hc_ip+=("$ip")
       steamuser=$(eval echo "$""STEAM_USER_HC""$i")
@@ -150,8 +177,7 @@ if [ -n "$HC_COUNT" ]; then
           hcloud volume attach --automount --server arma3hc"$i" "$volID_arma3hc_mods"
         else
           printf "Creating mod volume for the server\n"
-          hcloud volume create --server arma3hc"$i" --name arma3hc"$i"-mods --size 50
-          sleep 5
+          hcloud volume create --server arma3hc"$i" --name arma3hc"$i"-mods --size "$MODSIZE"
           ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "echo mkfs.xfs -n version=ci /dev/sdb -f"
           ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkdir /mnt/mods; mount /dev/sdb/ /mnt/mods"
         fi

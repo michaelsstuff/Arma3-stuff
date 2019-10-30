@@ -26,6 +26,9 @@ Create a .env file, which contains your deplyoment informations:
 
 ```ini
 HCLOUD_TOKEN=""
+SERVERTYPE=cx41
+HCTYPE=cx21
+MODSIZE=50
 SSHNAME="a3stuff"
 STEAM_USER_SRV=""
 STEAM_PASW_SRV=""
