@@ -5,7 +5,6 @@ if [ -z "$1" ]; then
   printf "Please specify what to do \n"
   printf "\"deploy\" to deploy servers \n"
   printf "\"remove\" to remove servers \n"
-  printf "Warning; \"remove\" will not delete your volumes or floating IPs \n"
   exit 1
 fi
 
@@ -69,14 +68,6 @@ $hcloud server create --image centos-7 --name arma3server --type ccx21 --ssh-key
 ip="$($hcloud server list -o noheader | grep arma3server | awk '{print $4}')"
 server_ip=$ip
 
-floating_ip=$(hcloud floating-ip list | grep a3server | awk '{print $4}')
-if [[ $floating_ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-  hcloud floating-ip assign "$(hcloud floating-ip list | grep a3server | awk '{print $1}')" arma3server
-else
-  hcloud floating-ip create --type ipv4 --server arma3server --description a3server
-  floating_ip=$(hcloud floating-ip list | grep a3server | awk '{print $4}')
-fi
-
 sleep 10
 while true; do
   test_ssh "$ip" && break
@@ -93,7 +84,8 @@ if [ "$MODMETHOD" = "ftp" ]; then
   else
     printf "Creating mod volume for the server\n"
     hcloud volume create --server arma3server --name arma3server-mods --size 50
-    ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "echo mkfs.xfs -n version=ci /dev/sdb -f"
+    sleep 5
+    ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkfs.xfs -n version=ci /dev/sdb -f"
     ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkdir /mnt/mods; mount /dev/sdb/ /mnt/mods"
   fi
 fi
@@ -108,7 +100,6 @@ echo "$CRYPTKEY" > /home/steam/secret.key
 sed -i "/STEAMUSER=/c\STEAMUSER=\"${STEAM_USER_SRV}\"" "$cfg"
 sed -i "/STEAMPASS=/c\STEAMPASS=\"${STEAM_PASW_SRV}\"" "$cfg"
 sed -i "/SERVERPASS=/c\SERVERPASS=\"${SERVERPASS}\"" "$cfg"
-ip addr add "$floating_ip" dev eth0
 EOC
 
 if [ "$MODMETHOD" = "ftp" ]; then
@@ -160,6 +151,7 @@ if [ -n "$HC_COUNT" ]; then
         else
           printf "Creating mod volume for the server\n"
           hcloud volume create --server arma3hc"$i" --name arma3hc"$i"-mods --size 50
+          sleep 5
           ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "echo mkfs.xfs -n version=ci /dev/sdb -f"
           ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkdir /mnt/mods; mount /dev/sdb/ /mnt/mods"
         fi
@@ -225,5 +217,5 @@ done
 printf "\n"
 printf "Your ArmA 3 Server IP for your players to connecto to is: \n"
 printf "\n"
-printf "%s \n" "$floating_ip"
+printf "%s \n" "$server_ip"
 printf "\n"
