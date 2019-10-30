@@ -90,6 +90,7 @@ if [ "$MODMETHOD" = "ftp" ]; then
     hcloud volume create --server arma3server --name arma3server-mods --size 50
     sleep 5
     ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkfs.xfs -n version=ci /dev/sdb -f"
+    sleep 3
     ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkdir /mnt/mods; mount /dev/sdb/ /mnt/mods"
   fi
 fi
