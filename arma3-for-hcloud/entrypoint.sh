@@ -179,7 +179,9 @@ if [ -n "$HC_COUNT" ]; then
         else
           printf "Creating mod volume for the server\n"
           hcloud volume create --server arma3hc"$i" --name arma3hc"$i"-mods --size "$MODSIZE"
+          sleep 5
           ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "echo mkfs.xfs -n version=ci /dev/sdb -f"
+          sleep 3
           ssh -T -o PreferredAuthentications=publickey -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -i $sshkeyfile root@"$ip" "mkdir /mnt/mods; mount /dev/sdb/ /mnt/mods"
         fi
       fi
